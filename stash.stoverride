@@ -252,91 +252,51 @@ proxy-groups: #!replace
     type: select
     include-all: true
     filter: "(?i)(港|hk|hong|hongkong|hong kong|hkg|🇭🇰)"
-    proxies:
-      - HK-Auto
-      - HK-FallBack
-      - HK-LoadBalance
 
   - name: Singapore
     type: select
     include-all: true
     filter: "(?i)(新加坡|狮城|sg|singapore|🇸🇬)"
-    proxies:
-      - SG-Auto
-      - SG-FallBack
-      - SG-LoadBalance
 
   - name: America
     type: select
     include-all: true
     filter: "(?i)(美|us|united states|america|usa|🇺🇸)"
-    proxies:
-      - US-Auto
-      - US-FallBack
-      - US-LoadBalance
 
   - name: TaiWan
     type: select
     include-all: true
     filter: "(?i)(台|tw|taiwan|tai wan|🇹🇼)"
-    proxies:
-      - TW-Auto
-      - TW-FallBack
-      - TW-LoadBalance
 
   - name: UK
     type: select
     include-all: true
     filter: "(?i)(英|英国|uk|britain|london|🇬🇧)"
-    proxies:
-      - UK-Auto
-      - UK-FallBack
-      - UK-LoadBalance
 
   - name: Germany
     type: select
     include-all: true
     filter: "(?i)(德|德国|germany|frankfurt|de|🇩🇪)"
-    proxies:
-      - DE-Auto
-      - DE-FallBack
-      - DE-LoadBalance
 
   - name: Japan
     type: select
     include-all: true
     filter: "(?i)(日|jp|japan|tokyo|🇯🇵)"
-    proxies:
-      - JP-Auto
-      - JP-FallBack
-      - JP-LoadBalance
 
   - name: Korea
     type: select
     include-all: true
     filter: "(?i)(韩|韩国|kr|korea|seoul|🇰🇷)"
-    proxies:
-      - KR-Auto
-      - KR-FallBack
-      - KR-LoadBalance
 
   - name: SEA
     type: select
     include-all: true
     filter: "(?i)(越|vn|vietnam|泰|th|thailand|马|my|malaysia|🇹🇭|🇲🇾)"
-    proxies:
-      - SEA-Auto
-      - SEA-FallBack
-      - SEA-LoadBalance
 
   - name: Europe
     type: select
     include-all: true
     filter: "(?i)(英|uk|德国|germany|法国|france|荷兰|netherlands|🇬🇧|🇩🇪|🇫🇷)"
-    proxies:
-      - EU-Auto
-      - EU-FallBack
-      - EU-LoadBalance
 
   - name: AllServer
     type: select
@@ -344,266 +304,8 @@ proxy-groups: #!replace
       - All-Auto
 
 # =========================
-# Auto
+# AllServer Auto
 # =========================
-
-  - name: HK-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(港|hk|hong|hongkong|hong kong|hkg|🇭🇰)"
-    interval: 300
-    lazy: true
-
-  - name: SG-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(新加坡|狮城|sg|singapore|🇸🇬)"
-    interval: 300
-    lazy: true
-
-  - name: US-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(美|us|united states|america|usa|🇺🇸)"
-    interval: 300
-    lazy: true
-
-  - name: TW-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(台|tw|taiwan|tai wan|🇹🇼)"
-    interval: 300
-    lazy: true
-
-  - name: UK-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(英|英国|uk|britain|london|🇬🇧)"
-    interval: 300
-    lazy: true
-
-  - name: DE-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(德|德国|germany|frankfurt|de|🇩🇪)"
-    interval: 300
-    lazy: true
-
-  - name: JP-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(日|jp|japan|tokyo|🇯🇵)"
-    interval: 300
-    lazy: true
-
-  - name: KR-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(韩|韩国|kr|korea|seoul|🇰🇷)"
-    interval: 300
-    lazy: true
-
-  - name: SEA-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(越|vn|vietnam|泰|th|thailand|马|my|malaysia|🇹🇭|🇲🇾)"
-    interval: 300
-    lazy: true
-
-  - name: EU-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)(英|uk|德国|germany|法国|france|荷兰|netherlands|🇬🇧|🇩🇪|🇫🇷)"
-    interval: 300
-    lazy: true
-
-# =========================
-# FallBack
-# =========================
-
-  - name: HK-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(港|hk|hong|🇭🇰)"
-    interval: 300
-    lazy: true
-
-  - name: SG-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(新加坡|sg|singapore|🇸🇬)"
-    interval: 300
-    lazy: true
-
-  - name: US-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(美|us|america|usa|🇺🇸)"
-    interval: 300
-    lazy: true
-
-  - name: TW-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(台|tw|taiwan|🇹🇼)"
-    interval: 300
-    lazy: true
-
-  - name: UK-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(英|uk|🇬🇧)"
-    interval: 300
-    lazy: true
-
-  - name: DE-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(德|germany|🇩🇪)"
-    interval: 300
-    lazy: true
-
-  - name: JP-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(日|jp|🇯🇵)"
-    interval: 300
-    lazy: true
-
-  - name: KR-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(韩|kr|🇰🇷)"
-    interval: 300
-    lazy: true
-
-  - name: SEA-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(越|vn|泰|th|马|my|🇹🇭|🇲🇾)"
-    interval: 300
-    lazy: true
-
-  - name: EU-FallBack
-    type: fallback
-    hidden: true
-    include-all: true
-    filter: "(?i)(英|uk|德国|germany|🇬🇧|🇩🇪)"
-    interval: 300
-    lazy: true
-
-# =========================
-# LoadBalance
-# =========================
-
-  - name: HK-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(港|hk|hong|🇭🇰)"
-    interval: 300
-    lazy: true
-
-  - name: SG-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(新加坡|sg|🇸🇬)"
-    interval: 300
-    lazy: true
-
-  - name: US-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(美|us|🇺🇸)"
-    interval: 300
-    lazy: true
-
-  - name: TW-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(台|tw|🇹🇼)"
-    interval: 300
-    lazy: true
-
-  - name: UK-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(英|uk|🇬🇧)"
-    interval: 300
-    lazy: true
-
-  - name: DE-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(德|germany|🇩🇪)"
-    interval: 300
-    lazy: true
-
-  - name: JP-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(日|jp|🇯🇵)"
-    interval: 300
-    lazy: true
-
-  - name: KR-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(韩|kr|🇰🇷)"
-    interval: 300
-    lazy: true
-
-  - name: SEA-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(越|vn|泰|th|马|my|🇹🇭|🇲🇾)"
-    interval: 300
-    lazy: true
-
-  - name: EU-LoadBalance
-    type: load-balance
-    hidden: true
-    strategy: consistent-hashing
-    include-all: true
-    filter: "(?i)(英|uk|德国|germany|🇬🇧|🇩🇪)"
-    interval: 300
-    lazy: true
 
   - name: All-Auto
     type: url-test

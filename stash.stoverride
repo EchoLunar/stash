@@ -200,6 +200,7 @@ proxy-groups: #!replace
       - SEA
       - America
       - Proxy
+      - DIRECT
 
 # =========================
 # Google

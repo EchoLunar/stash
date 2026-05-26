@@ -1,0 +1,725 @@
+---
+name: 自用覆写
+desc: 更值得干杯🍻！
+icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
+
+proxy-groups: #!replace
+
+# =========================
+# 主入口
+# =========================
+
+  - name: Final
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Final.png
+    proxies:
+      - Proxy
+      - DIRECT
+
+# =========================
+# 主代理
+# =========================
+
+  - name: Proxy
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png
+    proxies:
+      - HongKong
+      - Singapore
+      - America
+      - TaiWan
+      - UK
+      - Germany
+      - Japan
+      - Korea
+      - SEA
+      - Europe
+      - AllServer
+      - DIRECT
+
+# =========================
+# AI
+# =========================
+
+  - name: AI
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png
+    proxies:
+      - America
+      - Singapore
+      - UK
+      - Germany
+      - Japan
+      - HongKong
+      - Proxy
+      - AllServer
+
+# =========================
+# Apple
+# =========================
+
+  - name: Apple
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_1.png
+    proxies:
+      - DIRECT
+      - Proxy
+      - HongKong
+      - Singapore
+      - America
+
+# =========================
+# YouTube
+# =========================
+
+  - name: YouTube
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png
+    proxies:
+      - Proxy
+      - HongKong
+      - Japan
+      - Korea
+      - Singapore
+      - America
+      - UK
+      - Germany
+      - AllServer
+
+# =========================
+# Telegram
+# =========================
+
+  - name: Telegram
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram_X.png
+    proxies:
+      - Proxy
+      - Singapore
+      - Japan
+      - Korea
+      - HongKong
+      - America
+
+# =========================
+# Talkatone
+# =========================
+
+  - name: Talkatone
+    type: select
+    icon: https://raw.githubusercontent.com/bigtree945/QuantumultXRuler/master/icons/Talkatone.png
+    proxies:
+      - HongKong
+      - America
+      - Proxy
+      - Singapore
+      
+# =========================
+# Crypto
+# =========================
+
+  - name: Crypto
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Cryptocurrency_2.png
+    proxies:
+      - TaiWan
+      - Singapore
+      - America
+      - Japan
+      - Proxy
+      - DIRECT
+      - AllServer
+
+# =========================
+# Polymarket
+# =========================
+
+  - name: Polymarket
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/PayPal.png
+    proxies:
+      - TaiWan
+      - Japan
+      - Korea
+      - SEA
+      - Proxy
+
+# =========================
+# GitHub
+# =========================
+
+  - name: GitHub
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/GitHub.png
+    proxies:
+      - Proxy
+      - HongKong
+      - Japan
+      - Singapore
+      - America
+      - DIRECT
+
+# =========================
+# Streaming
+# =========================
+
+  - name: Streaming
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Streaming.png
+    proxies:
+      - Proxy
+      - Japan
+      - Korea
+      - Singapore
+      - America
+      - UK
+      - Germany
+
+# =========================
+# TikTok
+# =========================
+
+  - name: TikTok
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/TikTok.png
+    proxies:
+      - Japan
+      - Korea
+      - Singapore
+      - SEA
+      - America
+      - Proxy
+
+# =========================
+# Google
+# =========================
+
+  - name: Google
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png
+    proxies:
+      - Proxy
+      - HongKong
+      - Singapore
+      - America
+      - DIRECT
+
+# =========================
+# Microsoft
+# =========================
+
+  - name: Microsoft
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Windows_11.png
+    proxies:
+      - DIRECT
+      - Proxy
+      - HongKong
+      - Singapore
+      - America
+
+# =========================
+# Games
+# =========================
+
+  - name: Games
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Game.png
+    proxies:
+      - HongKong
+      - Japan
+      - Korea
+      - Singapore
+      - America
+      - DIRECT
+
+# =========================
+# 地区组
+# =========================
+
+  - name: HongKong
+    type: select
+    proxies:
+      - HK-Auto
+      - HK-FallBack
+      - HK-LoadBalance
+
+  - name: Singapore
+    type: select
+    proxies:
+      - SG-Auto
+      - SG-FallBack
+      - SG-LoadBalance
+
+  - name: America
+    type: select
+    proxies:
+      - US-Auto
+      - US-FallBack
+      - US-LoadBalance
+
+  - name: TaiWan
+    type: select
+    proxies:
+      - TW-Auto
+      - TW-FallBack
+      - TW-LoadBalance
+
+  - name: UK
+    type: select
+    proxies:
+      - UK-Auto
+      - UK-FallBack
+      - UK-LoadBalance
+
+  - name: Germany
+    type: select
+    proxies:
+      - DE-Auto
+      - DE-FallBack
+      - DE-LoadBalance
+
+  - name: Japan
+    type: select
+    proxies:
+      - JP-Auto
+      - JP-FallBack
+      - JP-LoadBalance
+
+  - name: Korea
+    type: select
+    proxies:
+      - KR-Auto
+      - KR-FallBack
+      - KR-LoadBalance
+
+  - name: SEA
+    type: select
+    proxies:
+      - SEA-Auto
+      - SEA-FallBack
+      - SEA-LoadBalance
+
+  - name: Europe
+    type: select
+    proxies:
+      - EU-Auto
+      - EU-FallBack
+      - EU-LoadBalance
+
+  - name: AllServer
+    type: select
+    proxies:
+      - All-Auto
+
+# =========================
+# Auto
+# =========================
+
+  - name: HK-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(港|hk|hong|hongkong|hong kong|hkg|🇭🇰)"
+    interval: 300
+    lazy: true
+
+  - name: SG-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(新加坡|狮城|sg|singapore|🇸🇬)"
+    interval: 300
+    lazy: true
+
+  - name: US-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(美|us|united states|america|usa|🇺🇸)"
+    interval: 300
+    lazy: true
+
+  - name: TW-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(台|tw|taiwan|tai wan|🇹🇼)"
+    interval: 300
+    lazy: true
+
+  - name: UK-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(英|英国|uk|britain|london|🇬🇧)"
+    interval: 300
+    lazy: true
+
+  - name: DE-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(德|德国|germany|frankfurt|de|🇩🇪)"
+    interval: 300
+    lazy: true
+
+  - name: JP-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(日|jp|japan|tokyo|🇯🇵)"
+    interval: 300
+    lazy: true
+
+  - name: KR-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(韩|韩国|kr|korea|seoul|🇰🇷)"
+    interval: 300
+    lazy: true
+
+  - name: SEA-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(越|vn|vietnam|泰|th|thailand|马|my|malaysia|🇹🇭|🇲🇾)"
+    interval: 300
+    lazy: true
+
+  - name: EU-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)(英|uk|德国|germany|法国|france|荷兰|netherlands|🇬🇧|🇩🇪|🇫🇷)"
+    interval: 300
+    lazy: true
+
+# =========================
+# FallBack
+# =========================
+
+  - name: HK-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(港|hk|hong|🇭🇰)"
+    interval: 300
+    lazy: true
+
+  - name: SG-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(新加坡|sg|singapore|🇸🇬)"
+    interval: 300
+    lazy: true
+
+  - name: US-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(美|us|america|usa|🇺🇸)"
+    interval: 300
+    lazy: true
+
+  - name: TW-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(台|tw|taiwan|🇹🇼)"
+    interval: 300
+    lazy: true
+
+  - name: UK-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(英|uk|🇬🇧)"
+    interval: 300
+    lazy: true
+
+  - name: DE-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(德|germany|🇩🇪)"
+    interval: 300
+    lazy: true
+
+  - name: JP-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(日|jp|🇯🇵)"
+    interval: 300
+    lazy: true
+
+  - name: KR-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(韩|kr|🇰🇷)"
+    interval: 300
+    lazy: true
+
+  - name: SEA-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(越|vn|泰|th|马|my|🇹🇭|🇲🇾)"
+    interval: 300
+    lazy: true
+
+  - name: EU-FallBack
+    type: fallback
+    hidden: true
+    include-all: true
+    filter: "(?i)(英|uk|德国|germany|🇬🇧|🇩🇪)"
+    interval: 300
+    lazy: true
+
+# =========================
+# LoadBalance
+# =========================
+
+  - name: HK-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(港|hk|hong|🇭🇰)"
+    interval: 300
+    lazy: true
+
+  - name: SG-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(新加坡|sg|🇸🇬)"
+    interval: 300
+    lazy: true
+
+  - name: US-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(美|us|🇺🇸)"
+    interval: 300
+    lazy: true
+
+  - name: TW-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(台|tw|🇹🇼)"
+    interval: 300
+    lazy: true
+
+  - name: UK-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(英|uk|🇬🇧)"
+    interval: 300
+    lazy: true
+
+  - name: DE-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(德|germany|🇩🇪)"
+    interval: 300
+    lazy: true
+
+  - name: JP-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(日|jp|🇯🇵)"
+    interval: 300
+    lazy: true
+
+  - name: KR-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(韩|kr|🇰🇷)"
+    interval: 300
+    lazy: true
+
+  - name: SEA-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(越|vn|泰|th|马|my|🇹🇭|🇲🇾)"
+    interval: 300
+    lazy: true
+
+  - name: EU-LoadBalance
+    type: load-balance
+    hidden: true
+    strategy: consistent-hashing
+    include-all: true
+    filter: "(?i)(英|uk|德国|germany|🇬🇧|🇩🇪)"
+    interval: 300
+    lazy: true
+
+  - name: All-Auto
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)^((?!官网|流量|到期|订阅|客服|网站|频道).)*$"
+    interval: 300
+    lazy: true
+    
+rules: #!replace
+  
+  # 自定义规则
+  - DOMAIN-SUFFIX,talkatone.com,Talkatone
+  - DOMAIN-SUFFIX,tktn.be,Talkatone
+  - DOMAIN-SUFFIX,tktn.at,Talkatone
+
+  - DOMAIN-SUFFIX,polymarket.com,Polymarket
+  - DOMAIN-SUFFIX,polymarket.us,Polymarket
+  - DOMAIN-SUFFIX,gamma-api.polymarket.com,Polymarket
+  - DOMAIN-SUFFIX,data-api.polymarket.com,Polymarket
+
+  - RULE-SET,APNs,Proxy
+  - RULE-SET,Reject,REJECT
+  - RULE-SET,Direct,DIRECT
+  - RULE-SET,AI,AI
+  - RULE-SET,Crypto,Crypto
+  - RULE-SET,YouTube,YouTube
+  - RULE-SET,Telegram,Telegram
+  - RULE-SET,GitHub,GitHub
+  - RULE-SET,TikTok,TikTok
+  - RULE-SET,Google,Google
+  - RULE-SET,Microsoft,Microsoft
+  - RULE-SET,Games,Games
+  - RULE-SET,AppleCN,DIRECT
+  - RULE-SET,AppleServers,Apple
+  - RULE-SET,ProxyMedia,Streaming
+  - RULE-SET,ProxyGFW,Proxy
+  - RULE-SET,CN_Mainland,DIRECT
+  - RULE-SET,LAN,DIRECT
+  - MATCH,Final
+
+rule-providers: #!replace
+  Reject:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Reject.list
+
+  Direct:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Direct.list
+
+  AI:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list
+
+  YouTube:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list
+
+  Telegram:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list
+
+  GitHub:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Github.list
+
+  TikTok:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list
+
+  Google:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Google.list
+
+  Microsoft:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Microsoft.list
+
+  Games:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Game.list
+    
+  Crypto:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Crypto.list
+
+  ProxyMedia:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/ProxyMedia.list
+
+  ProxyGFW:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/ProxyGFW.list
+
+  AppleCN:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list
+
+  AppleServers:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list
+
+  CN_Mainland:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/ChinaDomain.list
+
+  LAN:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list
+  
+  APNs:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/APNs.list
+    

@@ -250,6 +250,8 @@ proxy-groups: #!replace
 
   - name: HongKong
     type: select
+    include-all: true
+    filter: "(?i)(港|hk|hong|hongkong|hong kong|hkg|🇭🇰)"
     proxies:
       - HK-Auto
       - HK-FallBack
@@ -257,6 +259,8 @@ proxy-groups: #!replace
 
   - name: Singapore
     type: select
+    include-all: true
+    filter: "(?i)(新加坡|狮城|sg|singapore|🇸🇬)"
     proxies:
       - SG-Auto
       - SG-FallBack
@@ -264,6 +268,8 @@ proxy-groups: #!replace
 
   - name: America
     type: select
+    include-all: true
+    filter: "(?i)(美|us|united states|america|usa|🇺🇸)"
     proxies:
       - US-Auto
       - US-FallBack
@@ -271,6 +277,8 @@ proxy-groups: #!replace
 
   - name: TaiWan
     type: select
+    include-all: true
+    filter: "(?i)(台|tw|taiwan|tai wan|🇹🇼)"
     proxies:
       - TW-Auto
       - TW-FallBack
@@ -278,6 +286,8 @@ proxy-groups: #!replace
 
   - name: UK
     type: select
+    include-all: true
+    filter: "(?i)(英|英国|uk|britain|london|🇬🇧)"
     proxies:
       - UK-Auto
       - UK-FallBack
@@ -285,6 +295,8 @@ proxy-groups: #!replace
 
   - name: Germany
     type: select
+    include-all: true
+    filter: "(?i)(德|德国|germany|frankfurt|de|🇩🇪)"
     proxies:
       - DE-Auto
       - DE-FallBack
@@ -292,6 +304,8 @@ proxy-groups: #!replace
 
   - name: Japan
     type: select
+    include-all: true
+    filter: "(?i)(日|jp|japan|tokyo|🇯🇵)"
     proxies:
       - JP-Auto
       - JP-FallBack
@@ -299,6 +313,8 @@ proxy-groups: #!replace
 
   - name: Korea
     type: select
+    include-all: true
+    filter: "(?i)(韩|韩国|kr|korea|seoul|🇰🇷)"
     proxies:
       - KR-Auto
       - KR-FallBack
@@ -306,6 +322,8 @@ proxy-groups: #!replace
 
   - name: SEA
     type: select
+    include-all: true
+    filter: "(?i)(越|vn|vietnam|泰|th|thailand|马|my|malaysia|🇹🇭|🇲🇾)"
     proxies:
       - SEA-Auto
       - SEA-FallBack
@@ -313,6 +331,8 @@ proxy-groups: #!replace
 
   - name: Europe
     type: select
+    include-all: true
+    filter: "(?i)(英|uk|德国|germany|法国|france|荷兰|netherlands|🇬🇧|🇩🇪|🇫🇷)"
     proxies:
       - EU-Auto
       - EU-FallBack

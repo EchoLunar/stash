@@ -69,6 +69,17 @@ proxy-groups: #!replace
       - America
 
 # =========================
+# APNs
+# =========================
+
+  - name: APNs
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_1.png
+    proxies:
+      - DIRECT
+      - Proxy
+
+# =========================
 # YouTube
 # =========================
 
@@ -107,7 +118,7 @@ proxy-groups: #!replace
 
   - name: Talkatone
     type: select
-    icon: https://raw.githubusercontent.com/bigtree945/QuantumultXRuler/master/icons/Talkatone.png
+    icon: https://fastly.jsdelivr.net/gh/bigtree945/QuantumultXRuler@master/icons/Talkatone.png
     proxies:
       - HongKong
       - America
@@ -594,7 +605,7 @@ rules: #!replace
   - DOMAIN-SUFFIX,gamma-api.polymarket.com,Polymarket
   - DOMAIN-SUFFIX,data-api.polymarket.com,Polymarket
 
-  - RULE-SET,APNs,Proxy
+  - RULE-SET,APNs,APNs
   - RULE-SET,Reject,REJECT
   - RULE-SET,Direct,DIRECT
   - RULE-SET,AI,AI

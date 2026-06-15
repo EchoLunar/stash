@@ -338,11 +338,8 @@ rules: #!replace
   - DOMAIN-SUFFIX,tktn.be,Talkatone
   - DOMAIN-SUFFIX,tktn.at,Talkatone
 
-  - DOMAIN-SUFFIX,polymarket.com,Polymarket
-  - DOMAIN-SUFFIX,polymarket.us,Polymarket
-  - DOMAIN-SUFFIX,gamma-api.polymarket.com,Polymarket
-  - DOMAIN-SUFFIX,data-api.polymarket.com,Polymarket
-
+  # Polymarket
+  - DOMAIN-KEYWORD,polymarket,Polymarket
 
   - RULE-SET,APNs,APNs
   - RULE-SET,Reject,REJECT

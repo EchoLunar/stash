@@ -1,351 +1,223 @@
 ---
 name: 自用覆写
-desc: 更值得干杯🍻！
+desc: 3x-ui 仅负责下发节点；本覆写接管 DNS、策略组、规则和规则集。🍻！
 icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
 
-proxy-groups: #!replace
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: true
 
-# =========================
-# 主入口
-# =========================
+profile:
+  store-selected: true
+
+# 完全替换订阅中的 DNS，避免与 3x-ui 生成配置递归合并。
+dns: #!replace
+  enable: true
+  use-system-hosts: false
+  ipv6: false
+  listen: 0.0.0.0:53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '*.localhost'
+    - 'stun.*.*.*'
+    - 'stun.*.*'
+    - time.windows.com
+    - time.nist.gov
+    - time.apple.com
+    - time.asia.apple.com
+    - '*.ntp.org.cn'
+    - '*.openwrt.pool.ntp.org'
+    - time1.cloud.tencent.com
+    - time.ustc.edu.cn
+    - pool.ntp.org
+    - ntp.ubuntu.com
+    - ntp.aliyun.com
+    - ntp1.aliyun.com
+    - ntp2.aliyun.com
+    - ntp3.aliyun.com
+    - ntp4.aliyun.com
+    - ntp5.aliyun.com
+    - ntp6.aliyun.com
+    - ntp7.aliyun.com
+    - time1.aliyun.com
+    - time2.aliyun.com
+    - time3.aliyun.com
+    - time4.aliyun.com
+    - time5.aliyun.com
+    - time6.aliyun.com
+    - time7.aliyun.com
+    - '*.time.edu.cn'
+    - time1.apple.com
+    - time2.apple.com
+    - time3.apple.com
+    - time4.apple.com
+    - time5.apple.com
+    - time6.apple.com
+    - time7.apple.com
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+    - music.163.com
+    - '*.music.163.com'
+    - '*.126.net'
+    - musicapi.taihe.com
+    - music.taihe.com
+    - songsearch.kugou.com
+    - trackercdn.kugou.com
+    - '*.kuwo.cn'
+    - y.qq.com
+    - '*.y.qq.com'
+    - streamoc.music.tc.qq.com
+    - mobileoc.music.tc.qq.com
+    - isure.stream.qqmusic.qq.com
+    - dl.stream.qqmusic.qq.com
+    - aqqmusic.tc.qq.com
+    - amobile.music.tc.qq.com
+    - '*.xiami.com'
+    - '*.music.migu.cn'
+    - music.migu.cn
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - '*.srv.nintendo.net'
+    - '*.stun.playstation.net'
+    - 'xbox.*.microsoft.com'
+    - '*.ipv6.microsoft.com'
+    - '*.xboxlive.com'
+    - speedtest.cros.wr.pvp.net
+    - localhost.ptlogin2.qq.com
+
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+
+# 不覆写 proxies。所有真实节点始终由 3x-ui 订阅下发。
+# Proxy 和 Polymarket 直接收纳订阅中的全部节点。
+proxy-groups: #!replace
+  - name: Proxy
+    type: select
+    include-all: true
+    proxies:
+      - DIRECT
 
   - name: Final
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Final.png
     proxies:
       - Proxy
       - DIRECT
-
-# =========================
-# 主代理
-# =========================
-
-  - name: Proxy
-    type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png
-    proxies:
-      - HongKong
-      - Singapore
-      - America
-      - TaiWan
-      - UK
-      - Germany
-      - Japan
-      - Korea
-      - SEA
-      - Europe
-      - AllServer
-      - DIRECT
-
-# =========================
-# AI
-# =========================
 
   - name: AI
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png
     proxies:
-      - America
-      - Singapore
-      - UK
-      - Germany
-      - Japan
-      - HongKong
       - Proxy
-      - AllServer
-
-# =========================
-# Apple
-# =========================
+      - DIRECT
 
   - name: Apple
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_1.png
     proxies:
       - DIRECT
       - Proxy
-      - HongKong
-      - Singapore
-      - America
-
-# =========================
-# APNs
-# =========================
 
   - name: APNs
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_1.png
     proxies:
       - DIRECT
       - Proxy
-
-# =========================
-# Amazon
-# =========================
 
   - name: Amazon
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Amazon.png
     proxies:
       - Proxy
-      - HongKong
-      - Japan
-      - Singapore
-      - America
       - DIRECT
-
-# =========================
-# YouTube
-# =========================
 
   - name: YouTube
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png
     proxies:
       - Proxy
-      - HongKong
-      - Japan
-      - Korea
-      - Singapore
-      - America
-      - UK
-      - Germany
-      - AllServer
-
-# =========================
-# Telegram
-# =========================
+      - DIRECT
 
   - name: Telegram
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram_X.png
     proxies:
       - Proxy
-      - Singapore
-      - Japan
-      - Korea
-      - HongKong
-      - America
-
-# =========================
-# Talkatone
-# =========================
+      - DIRECT
 
   - name: Talkatone
     type: select
-    icon: https://fastly.jsdelivr.net/gh/bigtree945/QuantumultXRuler@master/icons/Talkatone.png
     proxies:
-      - HongKong
-      - America
       - Proxy
-      - Singapore
-      
-# =========================
-# Binance
-# =========================
+      - DIRECT
 
   - name: Binance
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Cryptocurrency_2.png
     proxies:
-      - TaiWan
-      - Singapore
-      - America
-      - Japan
       - Proxy
       - DIRECT
-      - AllServer
-
-# =========================
-# Polymarket
-# =========================
 
   - name: Polymarket
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/PayPal.png
+    include-all: true
     proxies:
-      - HongKong
-      - Korea
-      - SEA
       - Proxy
-
-# =========================
-# GitHub
-# =========================
+      - DIRECT
 
   - name: GitHub
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/GitHub.png
     proxies:
       - Proxy
-      - HongKong
-      - Japan
-      - Singapore
-      - America
       - DIRECT
-
-# =========================
-# Streaming
-# =========================
 
   - name: Streaming
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Streaming.png
     proxies:
       - Proxy
-      - Japan
-      - Korea
-      - Singapore
-      - America
-      - UK
-      - Germany
-
-# =========================
-# TikTok
-# =========================
+      - DIRECT
 
   - name: TikTok
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/TikTok.png
     proxies:
-      - Japan
-      - Korea
-      - Singapore
-      - SEA
-      - America
       - Proxy
       - DIRECT
-
-# =========================
-# Google
-# =========================
 
   - name: Google
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png
     proxies:
       - Proxy
-      - HongKong
-      - Singapore
-      - America
       - DIRECT
-
-# =========================
-# Microsoft
-# =========================
 
   - name: Microsoft
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Windows_11.png
     proxies:
       - DIRECT
       - Proxy
-      - HongKong
-      - Singapore
-      - America
-
-# =========================
-# Games
-# =========================
 
   - name: Games
     type: select
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Game.png
     proxies:
-      - HongKong
-      - Japan
-      - Korea
-      - Singapore
-      - America
+      - Proxy
       - DIRECT
 
-# =========================
-# 地区组
-# =========================
-
-  - name: HongKong
-    type: select
-    include-all: true
-    filter: "(?i)(港|hk|hong|hongkong|hong kong|hkg|🇭🇰)"
-
-  - name: Singapore
-    type: select
-    include-all: true
-    filter: "(?i)(新加坡|狮城|sg|singapore|🇸🇬)"
-
-  - name: America
-    type: select
-    include-all: true
-    filter: "(?i)(美|us|united states|america|usa|🇺🇸)"
-
-  - name: TaiWan
-    type: select
-    include-all: true
-    filter: "(?i)(台|tw|taiwan|tai wan|🇹🇼)"
-
-  - name: UK
-    type: select
-    include-all: true
-    filter: "(?i)(英|英国|uk|britain|london|🇬🇧)"
-
-  - name: Germany
-    type: select
-    include-all: true
-    filter: "(?i)(德|德国|germany|frankfurt|de|🇩🇪)"
-
-  - name: Japan
-    type: select
-    include-all: true
-    filter: "(?i)(日|jp|japan|tokyo|🇯🇵)"
-
-  - name: Korea
-    type: select
-    include-all: true
-    filter: "(?i)(韩|韩国|kr|korea|seoul|🇰🇷)"
-
-  - name: SEA
-    type: select
-    include-all: true
-    filter: "(?i)(越|vn|vietnam|泰|th|thailand|马|my|malaysia|🇹🇭|🇲🇾)"
-
-  - name: Europe
-    type: select
-    include-all: true
-    filter: "(?i)(英|uk|德国|germany|法国|france|荷兰|netherlands|🇬🇧|🇩🇪|🇫🇷)"
-
-  - name: AllServer
-    type: select
-    proxies:
-      - All-Auto
-
-# =========================
-# AllServer Auto
-# =========================
-
-  - name: All-Auto
-    type: url-test
-    hidden: true
-    include-all: true
-    filter: "(?i)^((?!官网|流量|到期|订阅|客服|网站|频道).)*$"
-    interval: 300
-    lazy: true
-    
 rules: #!replace
-  
-  # 自定义规则
   - DOMAIN-SUFFIX,talkatone.com,Talkatone
   - DOMAIN-SUFFIX,tktn.be,Talkatone
   - DOMAIN-SUFFIX,tktn.at,Talkatone
-
-  # Polymarket
   - DOMAIN-KEYWORD,polymarket,Polymarket
-
+  - RULE-SET,Binance,Binance
+  - DOMAIN-KEYWORD,binance,Binance
   - RULE-SET,APNs,APNs
   - RULE-SET,Reject,REJECT
   - RULE-SET,Direct,DIRECT
   - RULE-SET,AI,AI
   - RULE-SET,Amazon,Amazon
-  - RULE-SET,Binance,Binance
   - RULE-SET,YouTube,YouTube
   - RULE-SET,Telegram,Telegram
   - RULE-SET,GitHub,GitHub
@@ -427,10 +299,10 @@ rule-providers: #!replace
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Game.list
-    
+
   Binance:
     behavior: classical
-    format: text
+    format: yaml
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
 
@@ -469,10 +341,9 @@ rule-providers: #!replace
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list
-  
+
   APNs:
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/APNs.list
-    

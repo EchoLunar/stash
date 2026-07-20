@@ -1,0 +1,384 @@
+# Clash Verge Rev 扩展覆写配置
+# 3x-ui 订阅仅负责下发 proxies；此文件替换 DNS、策略组、规则和规则提供者。
+# 在 Clash Verge Rev 中将本文件内容粘贴到订阅的“扩展配置”中使用。
+
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: true
+
+profile:
+  store-selected: true
+
+dns:
+  enable: true
+  use-system-hosts: false
+  ipv6: false
+  listen: 0.0.0.0:53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '*.localhost'
+    - 'stun.*.*.*'
+    - 'stun.*.*'
+    - time.windows.com
+    - time.nist.gov
+    - time.apple.com
+    - time.asia.apple.com
+    - '*.ntp.org.cn'
+    - '*.openwrt.pool.ntp.org'
+    - time1.cloud.tencent.com
+    - time.ustc.edu.cn
+    - pool.ntp.org
+    - ntp.ubuntu.com
+    - ntp.aliyun.com
+    - ntp1.aliyun.com
+    - ntp2.aliyun.com
+    - ntp3.aliyun.com
+    - ntp4.aliyun.com
+    - ntp5.aliyun.com
+    - ntp6.aliyun.com
+    - ntp7.aliyun.com
+    - time1.aliyun.com
+    - time2.aliyun.com
+    - time3.aliyun.com
+    - time4.aliyun.com
+    - time5.aliyun.com
+    - time6.aliyun.com
+    - time7.aliyun.com
+    - '*.time.edu.cn'
+    - time1.apple.com
+    - time2.apple.com
+    - time3.apple.com
+    - time4.apple.com
+    - time5.apple.com
+    - time6.apple.com
+    - time7.apple.com
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+    - music.163.com
+    - '*.music.163.com'
+    - '*.126.net'
+    - musicapi.taihe.com
+    - music.taihe.com
+    - songsearch.kugou.com
+    - trackercdn.kugou.com
+    - '*.kuwo.cn'
+    - y.qq.com
+    - '*.y.qq.com'
+    - streamoc.music.tc.qq.com
+    - mobileoc.music.tc.qq.com
+    - isure.stream.qqmusic.qq.com
+    - dl.stream.qqmusic.qq.com
+    - aqqmusic.tc.qq.com
+    - amobile.music.tc.qq.com
+    - '*.xiami.com'
+    - '*.music.migu.cn'
+    - music.migu.cn
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - '*.srv.nintendo.net'
+    - '*.stun.playstation.net'
+    - 'xbox.*.microsoft.com'
+    - '*.ipv6.microsoft.com'
+    - '*.xboxlive.com'
+    - speedtest.cros.wr.pvp.net
+    - localhost.ptlogin2.qq.com
+
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+
+# 不定义 proxies，保留订阅下发的全部真实节点。
+proxy-groups:
+  - name: Proxy
+    type: select
+    include-all: true
+    proxies:
+      - DIRECT
+
+  - name: Final
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: AI
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Apple
+    type: select
+    proxies:
+      - DIRECT
+      - Proxy
+
+  - name: APNs
+    type: select
+    proxies:
+      - DIRECT
+      - Proxy
+
+  - name: Amazon
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: YouTube
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Telegram
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Talkatone
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Binance
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Polymarket
+    type: select
+    include-all: true
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: GitHub
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Streaming
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: TikTok
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Google
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Microsoft
+    type: select
+    proxies:
+      - DIRECT
+      - Proxy
+
+  - name: Games
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+rules:
+  - DOMAIN-SUFFIX,talkatone.com,Talkatone
+  - DOMAIN-SUFFIX,tktn.be,Talkatone
+  - DOMAIN-SUFFIX,tktn.at,Talkatone
+  - DOMAIN-KEYWORD,polymarket,Polymarket
+  - RULE-SET,Binance,Binance
+  - DOMAIN-KEYWORD,binance,Binance
+  - RULE-SET,APNs,APNs
+  - RULE-SET,Reject,REJECT
+  - RULE-SET,Direct,DIRECT
+  - RULE-SET,AI,AI
+  - RULE-SET,Amazon,Amazon
+  - RULE-SET,YouTube,YouTube
+  - RULE-SET,Telegram,Telegram
+  - RULE-SET,GitHub,GitHub
+  - RULE-SET,TikTok,TikTok
+  - RULE-SET,Google,Google
+  - RULE-SET,Microsoft,Microsoft
+  - RULE-SET,Games,Games
+  - RULE-SET,AppleCN,DIRECT
+  - RULE-SET,AppleServers,Apple
+  - RULE-SET,ProxyMedia,Streaming
+  - RULE-SET,ProxyGFW,Proxy
+  - RULE-SET,CN_Mainland,DIRECT
+  - RULE-SET,LAN,DIRECT
+  - MATCH,Final
+
+rule-providers:
+  Reject:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Reject.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Reject.list
+
+  Direct:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Direct.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Direct.list
+
+  AI:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/AI.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list
+
+  Amazon:
+    type: http
+    behavior: classical
+    format: yaml
+    path: ./ruleset/Amazon.yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Amazon/Amazon.yaml
+
+  YouTube:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/YouTube.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list
+
+  Telegram:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Telegram.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list
+
+  GitHub:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Github.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Github.list
+
+  TikTok:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/TikTok.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list
+
+  Google:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Google.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Google.list
+
+  Microsoft:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Microsoft.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Microsoft.list
+
+  Games:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Game.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Game.list
+
+  Binance:
+    type: http
+    behavior: classical
+    format: yaml
+    path: ./ruleset/Binance.yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
+
+  ProxyMedia:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/ProxyMedia.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/ProxyMedia.list
+
+  ProxyGFW:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/ProxyGFW.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/ProxyGFW.list
+
+  AppleCN:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/AppleCN.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list
+
+  AppleServers:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/AppleServers.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list
+
+  CN_Mainland:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/ChinaDomain.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/ChinaDomain.list
+
+  LAN:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/Lan.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list
+
+  APNs:
+    type: http
+    behavior: classical
+    format: text
+    path: ./ruleset/APNs.list
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/APNs.list

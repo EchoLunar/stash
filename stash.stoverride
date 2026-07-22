@@ -5,7 +5,7 @@ icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
 
 mode: rule
 log-level: warning
-ipv6: false
+ipv6: true
 unified-delay: true
 
 profile:
@@ -15,7 +15,7 @@ profile:
 dns: #!replace
   enable: true
   use-system-hosts: false
-  ipv6: false
+  ipv6: true
   listen: 0.0.0.0:53
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16

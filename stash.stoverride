@@ -133,6 +133,12 @@ proxy-groups: #!replace
       - DIRECT
       - Proxy
 
+  - name: TestFlight
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
   - name: Amazon
     type: select
     proxies:
@@ -214,6 +220,7 @@ rules: #!replace
   - RULE-SET,Binance,Binance
   - DOMAIN-KEYWORD,binance,Binance
   - RULE-SET,APNs,APNs
+  - RULE-SET,TestFlight,TestFlight
   - RULE-SET,Reject,REJECT
   - RULE-SET,Direct,DIRECT
   - RULE-SET,AI,AI
@@ -329,6 +336,12 @@ rule-providers: #!replace
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list
+
+  TestFlight:
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TestFlight/TestFlight.yaml
 
   CN_Mainland:
     behavior: classical

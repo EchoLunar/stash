@@ -130,8 +130,8 @@ proxy-groups: #!replace
   - name: APNs
     type: select
     proxies:
-      - DIRECT
       - Proxy
+      - DIRECT
 
   - name: TestFlight
     type: select
@@ -359,4 +359,4 @@ rule-providers: #!replace
     behavior: classical
     format: text
     interval: 86400
-    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/APNs.list
+    url: https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/apns.list

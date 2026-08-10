@@ -169,6 +169,12 @@ proxy-groups: #!replace
       - Proxy
       - DIRECT
 
+  - name: Bybit
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
   - name: Polymarket
     type: select
     include-all: true
@@ -219,6 +225,7 @@ rules: #!replace
   - DOMAIN-KEYWORD,polymarket,Polymarket
   - RULE-SET,Binance,Binance
   - DOMAIN-KEYWORD,binance,Binance
+  - RULE-SET,Bybit,Bybit
   - RULE-SET,APNs,APNs
   - RULE-SET,TestFlight,TestFlight
   - RULE-SET,Reject,REJECT
@@ -312,6 +319,12 @@ rule-providers: #!replace
     format: yaml
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
+
+  Bybit:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list
 
   ProxyMedia:
     behavior: classical

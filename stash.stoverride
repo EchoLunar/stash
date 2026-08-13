@@ -219,6 +219,9 @@ proxy-groups: #!replace
       - DIRECT
 
 rules: #!replace
+  - DOMAIN-SUFFIX,dmit.io,Proxy
+  - DOMAIN-SUFFIX,4hu.com,Proxy
+  - DOMAIN-SUFFIX,4hu.tv,Proxy
   - DOMAIN-SUFFIX,talkatone.com,Talkatone
   - DOMAIN-SUFFIX,tktn.be,Talkatone
   - DOMAIN-SUFFIX,tktn.at,Talkatone

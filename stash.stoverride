@@ -212,6 +212,11 @@ proxy-groups: #!replace
       - DIRECT
       - Proxy
 
+  - name: Oracle
+    type: select
+    proxies:
+      - DIRECT
+
   - name: Games
     type: select
     proxies:
@@ -219,6 +224,9 @@ proxy-groups: #!replace
       - DIRECT
 
 rules: #!replace
+  - IP-CIDR,149.118.147.51/32,Oracle,no-resolve
+  - IP-CIDR6,2603:c030:304:9f01:0:49da:2c15:4454/128,Oracle,no-resolve
+  - DOMAIN-SUFFIX,cloud.oracle.com,Oracle
   - DOMAIN-SUFFIX,dmit.io,Proxy
   - DOMAIN-SUFFIX,4hu.com,Proxy
   - DOMAIN-SUFFIX,4hu.tv,Proxy

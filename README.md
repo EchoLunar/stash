@@ -6,7 +6,7 @@
 
 Loon 使用 `loon.conf`。该文件不包含节点，只负责 DNS、策略组、规则和远程规则集；已经在 Loon 中添加的节点会通过 `All` 筛选器加入 `Proxy` 策略组。
 
-Loon 远程配置地址：`https://raw.githubusercontent.com/EchoLunar/stash/main/loon.conf`
+Loon 远程配置地址：`https://github.com/EchoLunar/stash/raw/refs/heads/main/loon.conf`
 
 使用远程配置时，只需要在 Loon 中添加自己的节点，然后将上述地址作为远程配置导入即可。节点不会上传到 GitHub；远程配置只更新 DNS、策略组、规则和规则集。
 

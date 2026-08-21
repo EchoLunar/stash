@@ -5347,6 +5347,10 @@ proxy-groups: #!replace
     type: select
     include-all: true
 
+  - name: Polymarket
+    type: select
+    include-all: true
+
   - name: TikTok
     type: select
     include-all: true
@@ -5377,6 +5381,7 @@ rules: #!replace
   - RULE-SET,Binance,Binance
   - DOMAIN-KEYWORD,binance,Binance
   - RULE-SET,Bybit,Bybit
+  - DOMAIN-KEYWORD,polymarket,Polymarket
   - RULE-SET,APNs,APNs
   - RULE-SET,TestFlight,TestFlight
   - RULE-SET,Reject,REJECT

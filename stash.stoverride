@@ -5337,9 +5337,7 @@ proxy-groups: #!replace
 
   - name: Binance
     type: select
-    proxies:
-      - Proxy
-      - DIRECT
+    include-all: true
 
   - name: Bybit
     type: select

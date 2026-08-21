@@ -415,10 +415,10 @@ dns: #!replace
     '+.amzndns-cn.com': https://dns.alidns.com/dns-query
     '+.amzndns-cn.net': https://dns.alidns.com/dns-query
     '+.cloudfront-cn.net': https://dns.alidns.com/dns-query
-    '+.awsdns-cn-??.biz': https://dns.alidns.com/dns-query
-    '+.awsdns-cn-??.com': https://dns.alidns.com/dns-query
-    '+.awsdns-cn-??.net': https://dns.alidns.com/dns-query
-    '+.awsdns-cn-??.top': https://dns.alidns.com/dns-query
+    '*.awsdns-cn-*.biz': https://dns.alidns.com/dns-query
+    '*.awsdns-cn-*.com': https://dns.alidns.com/dns-query
+    '*.awsdns-cn-*.net': https://dns.alidns.com/dns-query
+    '*.awsdns-cn-*.top': https://dns.alidns.com/dns-query
     '+.b3log.org': https://dns.alidns.com/dns-query
     '+.b3logfile.com': https://dns.alidns.com/dns-query
     '+.hacpai.com': https://dns.alidns.com/dns-query

@@ -4,7 +4,7 @@
 
 使用 `stash.stoverride` 作为 Stash 覆写。
 
-该覆写不替换真实节点，仅追加一个名为 `DIRECT-Local` 的 `type: direct` 节点；因此不会把订阅下发的节点清掉。`Proxy` 是兜底代理入口，`AI`、`Talkatone`、`Binance`、`Bybit` 和其他 `include-all` 分组会同时收纳订阅节点与这个直连节点。
+该覆写不定义真实节点，因此不会把订阅下发的节点清掉。`Proxy` 是兜底代理入口，`AI`、`Talkatone`、`Binance` 和 `Bybit` 使用 `include-all: true` 收纳订阅节点。
 
 当前 `Final` 固定以 `Proxy` 作为兜底，未匹配流量不会因为策略组误选而直连。业务规则优先处理 `YouTube`、`Telegram`、`AI`、`TikTok`、`Talkatone`、`APNs`、`Apple`、`TestFlight`、`Binance` 和 `Bybit`；其余流量按中国域名、CDN、`CN_Mainland` 和 `GEOIP,CN` 依次判断，最后进入 `Proxy`。
 

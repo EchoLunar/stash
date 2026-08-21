@@ -11,12 +11,6 @@ unified-delay: true
 profile:
   store-selected: true
 
-# 仅追加一个可被 include-all 收纳的直连节点；不替换 3x-ui 下发的真实节点。
-# 使用独立名称，避免和 Stash 内置 DIRECT 策略重名。
-proxies:
-  - name: DIRECT-Local
-    type: direct
-
 # 完全替换订阅中的 DNS，避免与 3x-ui 生成配置递归合并。
 dns: #!replace
   enable: true
@@ -5310,19 +5304,17 @@ proxy-groups: #!replace
   - name: AI
     type: select
     include-all: true
-    proxies:
-      - DIRECT
 
   - name: Apple
     type: select
-    include-all: true
     proxies:
+      - Proxy
       - DIRECT
 
   - name: APNs
     type: select
-    include-all: true
     proxies:
+      - Proxy
       - DIRECT
 
   - name: TestFlight
@@ -5334,8 +5326,6 @@ proxy-groups: #!replace
   - name: YouTube
     type: select
     include-all: true
-    proxies:
-      - DIRECT
 
   - name: Telegram
     type: select
@@ -5356,14 +5346,10 @@ proxy-groups: #!replace
   - name: Bybit
     type: select
     include-all: true
-    proxies:
-      - DIRECT
 
   - name: TikTok
     type: select
     include-all: true
-    proxies:
-      - DIRECT
 
 rules: #!replace
   # 个人固定例外：Oracle VPS 及 Oracle 控制台域名直连。

@@ -5325,14 +5325,11 @@ proxy-groups: #!replace
 
   - name: YouTube
     type: select
-    proxies:
-      - Proxy
+    include-all: true
       
   - name: Telegram
     type: select
-    proxies:
-      - Proxy
-      - DIRECT
+    include-all: true
 
   - name: Talkatone
     type: select

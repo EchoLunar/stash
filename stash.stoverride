@@ -5325,8 +5325,9 @@ proxy-groups: #!replace
 
   - name: YouTube
     type: select
-    include-all: true
-
+    proxies:
+      - Proxy
+      
   - name: Telegram
     type: select
     proxies:
@@ -5339,8 +5340,8 @@ proxy-groups: #!replace
 
   - name: Binance
     type: select
-    include-all: true
     proxies:
+      - Proxy
       - DIRECT
 
   - name: Bybit

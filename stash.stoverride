@@ -5323,14 +5323,6 @@ proxy-groups: #!replace
       - Proxy
       - DIRECT
 
-  - name: YouTube
-    type: select
-    include-all: true
-      
-  - name: Telegram
-    type: select
-    include-all: true
-
   - name: Talkatone
     type: select
     include-all: true
@@ -5385,8 +5377,8 @@ rules: #!replace
   - RULE-SET,Reject,REJECT
 
   - RULE-SET,AI,AI
-  - RULE-SET,YouTube,YouTube
-  - RULE-SET,Telegram,Telegram
+  - RULE-SET,YouTube,Proxy
+  - RULE-SET,Telegram,Proxy
   - RULE-SET,TikTok,TikTok
   - RULE-SET,AppleCN,DIRECT
   - RULE-SET,AppleServers,Apple

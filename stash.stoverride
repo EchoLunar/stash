@@ -107,6 +107,8 @@ rules: #!replace
   # cloud.oracle.com 属于 oracle.com，DOMAIN-SUFFIX 会覆盖其子域名。
   - IP-CIDR,149.118.147.51/32,DIRECT,no-resolve
   - IP-CIDR6,2603:c030:304:9f01:0:49da:2c15:4454/128,DIRECT,no-resolve
+  - IP-CIDR,149.118.135.225/32,DIRECT,no-resolve
+  - IP-CIDR6,2603:c030:304:9f01:0:11b3:17c:f41d/128,DIRECT,no-resolve
   - DOMAIN-SUFFIX,oracle.com,DIRECT
   - DOMAIN-SUFFIX,oraclecloud.com,DIRECT
   - DOMAIN-SUFFIX,5202323.xyz,DIRECT

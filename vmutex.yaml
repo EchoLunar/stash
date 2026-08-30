@@ -14,7 +14,7 @@ dns: #!replace
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
 
-  # 仅用于解析 DoH 地址及代理节点域名的引导 DNS。
+  # 仅用于解析 DoH 地址的引导 DNS；不用于普通业务域名。
   default-nameserver:
     - 119.29.29.29
     - 223.5.5.5
@@ -25,10 +25,10 @@ dns: #!replace
     - https://1.0.0.1/dns-query
 
   # Stash 3.6+：独立解析代理节点域名，避免 DNS 跟随代理时递归。
-  # 这部分只会解析节点地址，不解析普通业务域名。
+  # 节点域名查询通过国内 DoH 加密，但保持本地直连以获得较准确的 Cloudflare 边缘节点。
   proxy-server-nameserver:
-    - 119.29.29.29
-    - 223.5.5.5
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
 
   # 中国域名使用加密国内 DoH，既保留本地 CDN 定位，又避免明文 DNS 查询。
   nameserver-policy:

@@ -1,23 +1,17 @@
----
-name: 自用覆写
-desc: 3x-ui 仅负责下发节点；本覆写接管 DNS、策略组、规则和规则集。🍻！
-icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
-
 # 通用设置
 mode: rule
 log-level: info
 # DNS 模块
-# 完全替换 3x-ui 订阅中的 DNS，避免原配置中的 system/UDP DNS 继续合并。
-dns: #!replace
+dns:
   enable: true
   ipv6: true
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
 
-  # 仅用于解析 DoH 地址的引导 DNS；不用于普通业务域名。
+  # Stash 3.6+ 支持加密 bootstrap；使用 IP 形式避免先通过明文 UDP 解析 DoH 域名。
   default-nameserver:
-    - 119.29.29.29
-    - 223.5.5.5
+    - 'https://223.5.5.5/dns-query'
+    - 'https://1.1.1.1/dns-query'
 
   # 非中国域名使用境外 DoH；配合 follow-rule 后通过代理请求。
   nameserver:
@@ -26,15 +20,28 @@ dns: #!replace
 
   # Stash 3.6+：独立解析代理节点域名，避免 DNS 跟随代理时递归。
   # 节点域名查询通过国内 DoH 加密，但保持本地直连以获得较准确的 Cloudflare 边缘节点。
+  # 自有后缀是否直连由 rules 单独决定，不影响这里对代理节点域名的独立解析。
   proxy-server-nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
 
   # 中国域名使用加密国内 DoH，既保留本地 CDN 定位，又避免明文 DNS 查询。
   nameserver-policy:
+    # 局域网/本地域名必须交给系统解析；不将其发送到公共 DNS。
+    'geosite:private':
+      - system
+    # 中国域名使用国内加密 DoH，尽量保留本地 CDN 调度。
     'geosite:cn':
       - https://dns.alidns.com/dns-query
       - https://doh.pub/dns-query
+    # 自有节点和服务统一使用本地出口直连，并使用国内加密 DoH 获取较准确的 CDN 结果。
+    '+.5202323.xyz':
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+    # 其他 geosite 规则集也受 Stash 3.6+ 支持；该项用于明确境外域名走境外加密 DoH。
+    'geosite:geolocation-!cn':
+      - https://1.1.1.1/dns-query
+      - https://1.0.0.1/dns-query
 
   # 普通 DNS 查询按 rules 选择 DIRECT/Proxy；命中代理规则的查询经代理出口，避免使用系统/运营商 DNS。
   follow-rule: true
@@ -59,7 +66,7 @@ proxy-providers:
     benchmark-url: http://www.gstatic.com/generate_204
     benchmark-timeout: 5
 
-proxy-groups: 
+proxy-groups:
   - name: Proxy
     type: select
     include-all: true
@@ -106,7 +113,7 @@ proxy-groups:
     type: select
     include-all: true
 
-rules: 
+rules:
 
   # 个人固定例外：Oracle VPS 及 Oracle 控制台域名直连。
   # cloud.oracle.com 属于 oracle.com，DOMAIN-SUFFIX 会覆盖其子域名。
@@ -116,6 +123,7 @@ rules:
   - IP-CIDR6,2603:c030:304:9f01:0:11b3:17c:f41d/128,DIRECT,no-resolve
   - DOMAIN-SUFFIX,oracle.com,DIRECT
   - DOMAIN-SUFFIX,oraclecloud.com,DIRECT
+  # 自有节点及服务统一直连；该规则覆盖根域名和所有子域名。
   - DOMAIN-SUFFIX,5202323.xyz,DIRECT
 
   # 个人固定代理例外。
@@ -132,7 +140,8 @@ rules:
   - DOMAIN-KEYWORD,polymarket,Polymarket
   - RULE-SET,APNs,APNs
   - RULE-SET,TestFlight,TestFlight
-  - RULE-SET,Reject,REJECT
+  # Stash 原生广告域名集合；REJECT-DROP 可避免被拦截应用反复重试。
+  - GEOSITE,category-ads,REJECT-DROP
 
   - RULE-SET,AI,AI
   - RULE-SET,YouTube,Proxy
@@ -152,13 +161,7 @@ rules:
   - GEOIP,CN,DIRECT,no-resolve
   - MATCH,Proxy
 
-rule-providers: #!replace
-  Reject:
-    behavior: classical
-    format: text
-    interval: 86400
-    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Reject.list
-
+rule-providers:
   AI:
     behavior: classical
     format: text
@@ -241,6 +244,6 @@ rule-providers: #!replace
 
   APNs:
     behavior: classical
-    format: text
+    format: yaml
     interval: 86400
-    url: https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/apns.list
+    url: https://raw.githubusercontent.com/dler-io/Rules/main/Clash/Provider/Apple%20Push.yaml

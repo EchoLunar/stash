@@ -6,19 +6,52 @@ icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
 # 通用设置
 mode: rule
 log-level: info
-# DNS模块
-dns:
+# DNS 模块
+# 完全替换 3x-ui 订阅中的 DNS，避免原配置中的 system/UDP DNS 继续合并。
+dns: #!replace
+  enable: true
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+
+  # 仅用于解析 DoH 地址及代理节点域名的引导 DNS。
   default-nameserver:
     - 119.29.29.29
     - 223.5.5.5
+
+  # 非中国域名使用境外 DoH；配合 follow-rule 后通过代理请求。
   nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
+    - https://1.1.1.1/dns-query
+    - https://1.0.0.1/dns-query
+
+  # Stash 3.6+：独立解析代理节点域名，避免 DNS 跟随代理时递归。
+  # 这部分只会解析节点地址，不解析普通业务域名。
+  proxy-server-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+
+  # 中国域名使用加密国内 DoH，既保留本地 CDN 定位，又避免明文 DNS 查询。
+  nameserver-policy:
+    'geosite:cn':
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+
+  # 普通 DNS 查询按 rules 选择 DIRECT/Proxy；命中代理规则的查询经代理出口，避免使用系统/运营商 DNS。
+  follow-rule: true
+
+  # 只有确实需要真实 IP 的特殊服务放在这里，不能使用 "*"。
   fake-ip-filter:
-    - "*"
     - "+.lan"
     - "+.local"
-    # 服务提供商:
+    - "localhost"
+    - "+.stun.*.*"
+    - "+.stun.*.*.*"
+    - "+.stun.*.*.*.*"
+    - "+.stun.*.*.*.*.*"
+    - "+.srv.nintendo.net"
+    - "+.stun.playstation.net"
+    - "*.msftconnecttest.com"
+    - "*.msftncsi.com"
 proxy-providers:
   Subscribe:
     url: http://your-service-provider # 用你的订阅链接替换
@@ -35,7 +68,6 @@ proxy-groups:
     type: select
     proxies:
       - Proxy
-      - DIRECT
 
   - name: AI
     type: select
@@ -118,6 +150,8 @@ rules:
   - RULE-SET,CloudflareCN,DIRECT
   - RULE-SET,AmazonCN,DIRECT
   - RULE-SET,LAN,DIRECT
+  # DNS follow-rule 需要明确的域名直连规则，确保中国域名使用本地出口解析。
+  - GEOSITE,cn,DIRECT
 
   # 大陆域名规则未命中的大陆 IP 兜底；前面的服务专用代理规则优先级更高。
   - GEOIP,CN,DIRECT,no-resolve

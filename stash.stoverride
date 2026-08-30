@@ -165,6 +165,7 @@ rules: #!replace
   - GEOIP,CN,DIRECT,no-resolve
   - MATCH,Final
 
+rule-providers: #!replace
   Reject:
     behavior: classical
     format: text

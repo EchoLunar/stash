@@ -11,40 +11,86 @@ unified-delay: true
 profile:
   store-selected: true
 
+# 开启嗅探，帮助 Stash 从 IP 连接中恢复域名并继续命中分流规则。
+# 不启用 force-domain，避免对普通域名连接做额外嗅探。
+sniffer: #!replace
+  enable: true
+  override-destination: false
+  sniff:
+    HTTP:
+      ports:
+        - 80
+        - 8080-8880
+      override-destination: true
+    TLS:
+      ports:
+        - 443
+        - 8443
+    QUIC:
+      ports:
+        - 443
+        - 8443
+  # 这些服务对 SNI/目的地址比较敏感，跳过嗅探以减少兼容性问题。
+  skip-domain:
+    - Mijia Cloud
+    - dlg.io.mi.com
+    - '+.apple.com'
+    - '+.icloud.com'
+    - '+.wechat.com'
+    - '+.qpic.cn'
+    - '+.qq.com'
+    - '+.wechatapp.com'
+    - '+.vivox.com'
+    - '+.oray.com'
+    - '+.sunlogin.net'
+
 # 完全替换订阅中的 DNS，避免与 3x-ui 生成配置递归合并。
 dns: #!replace
   enable: true
   use-system-hosts: false
   ipv6: true
   listen: 0.0.0.0:53
-  # 使用 Redir-Host，DNS 返回真实 IP；域名分流仍由 Stash 规则和 DNS 缓存负责。
-  enhanced-mode: redir-host
+  # 使用 Fake IP，代理请求尽量保留域名交给代理链路解析，避免本地 DNS 提前选错 CDN。
+  enhanced-mode: fake-ip
 
-  default-nameserver:
+  # bootstrap 使用国内 IPv4 DNS，仅用于解析 DoH 服务和代理节点的域名。
+  # 主 DNS 仍使用 DoH；国内 bootstrap 比境外 IP DoH 更适合中国网络环境。
+  default-nameserver: #!replace
     - 119.29.29.29
     - 223.5.5.5
 
-  # 中国域名优先使用国内 DoH；其他域名使用境外 DoH。
-  # rule-set 与 geosite 均指向国内 DNS，避免手工展开数千条域名。
+  # 中国域名优先使用国内 DoH；其他需要真实解析的域名使用境外 DoH。
+  # Stash 官方支持 geosite 匹配；rule-set 放在 nameserver-policy 中不依赖。
   nameserver:
     - https://cloudflare-dns.com/dns-query
     - https://dns.google/dns-query
 
   nameserver-policy:
-    'rule-set:GeositeCN_Domain':
-      - https://dns.alidns.com/dns-query
-      - https://doh.pub/dns-query
     'geosite:cn':
       - https://dns.alidns.com/dns-query
       - https://doh.pub/dns-query
 
-  # 代理节点本身也是域名（多数位于 Cloudflare），使用独立 DoH 解析，避免连接代理时形成 DNS 递归。
-  proxy-server-nameserver:
-    - https://doh.pub/dns-query
-    - https://dns.alidns.com/dns-query
+  # 这些服务需要真实 IP，避免 Fake IP 影响连通性。
+  fake-ip-filter:
+    - '+.stun.*.*'
+    - '+.stun.*.*.*'
+    - '+.stun.*.*.*.*'
+    - '+.stun.*.*.*.*.*'
+    - 'lens.l.google.com'
+    - '*.n.n.srv.nintendo.net'
+    - '+.stun.playstation.net'
+    - 'xbox.*.*.microsoft.com'
+    - '*.*.xboxlive.com'
+    - '*.msftncsi.com'
+    - '*.msftconnecttest.com'
 
-  # 普通 DNS 查询按代理规则转发；代理节点域名仍由上面的独立解析器解析。
-  follow-rule: true
+  # 代理节点本身也是域名，使用独立国内 DoH 解析，避免连接代理时形成 DNS 递归。
+  proxy-server-nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+
+  # Fake IP 已避免代理请求的本地解析；普通 DNS 保持直连，避免通用 Proxy 组影响 CDN 地域判断。
+  follow-rule: false
 
 # 不覆写 proxies。所有真实节点始终由 3x-ui 订阅下发。
 # Proxy 是所有未命中规则流量的代理入口；AI、Talkatone、Binance、Bybit、Polymarket 和 TikTok
@@ -103,6 +149,18 @@ proxy-groups: #!replace
     include-all: true
 
 rules: #!replace
+  # WebRTC/STUN 防泄露：拦截协议识别到的 STUN，以及常见 STUN/TURN 端口。
+  # 这会关闭基于 STUN 的 WebRTC/P2P 直连，也可能降低部分实时通话或 Tailscale
+  # 的直连能力；如果你更看重这些功能，可删除下面 4 条规则。
+  - PROTOCOL,STUN,REJECT-DROP
+  - AND,((NETWORK,udp),(DST-PORT,3478-3497)),REJECT-DROP
+  - AND,((NETWORK,tcp),(DST-PORT,5349)),REJECT-DROP
+  - AND,((NETWORK,udp),(DST-PORT,19302-19309)),REJECT-DROP
+
+  # 模板中的反 HTTPDNS 能力：内置 geosite 先拦截分类域名，规则集补充域名和 IP。
+  - GEOSITE,category-httpdns-cn,REJECT-DROP
+  - RULE-SET,BlockHTTPDNS,REJECT-DROP
+
   # 个人固定例外：Oracle VPS 及 Oracle 控制台域名直连。
   # cloud.oracle.com 属于 oracle.com，DOMAIN-SUFFIX 会覆盖其子域名。
   - IP-CIDR,149.118.147.51/32,DIRECT,no-resolve
@@ -118,7 +176,7 @@ rules: #!replace
   - DOMAIN-SUFFIX,4hu.com,Proxy
   - DOMAIN-SUFFIX,4hu.tv,Proxy
 
-  # follow-rule 下固定上游 DNS 的出站路径：国内 DoH 直连，境外 DoH 走代理。
+  # 内置 DNS 已关闭 follow-rule；以下规则只约束应用主动访问这些 DNS 服务域名时的流量。
   - DOMAIN-SUFFIX,doh.pub,DIRECT
   - DOMAIN-SUFFIX,dns.alidns.com,DIRECT
   - DOMAIN-SUFFIX,cloudflare-dns.com,Proxy
@@ -150,10 +208,17 @@ rules: #!replace
   - RULE-SET,LAN,DIRECT
 
   # 大陆域名规则未命中的大陆 IP 兜底；前面的服务专用代理规则优先级更高。
-  - GEOIP,CN,DIRECT
+  - GEOIP,CN,DIRECT,no-resolve
   - MATCH,Final
 
 rule-providers: #!replace
+  # 反 HTTPDNS 规则，避免应用绕过系统 DNS 直接把解析请求发往第三方服务。
+  BlockHTTPDNS:
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@latest/rule/Clash/BlockHttpDNS/BlockHttpDNS.yaml
+
   Reject:
     behavior: classical
     format: text

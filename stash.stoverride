@@ -181,7 +181,6 @@ rules: #!replace
   - DOMAIN-SUFFIX,dns.alidns.com,DIRECT
   - DOMAIN-SUFFIX,cloudflare-dns.com,Proxy
   - DOMAIN-SUFFIX,dns.google,Proxy
-  - GEOSITE,category-ads,REJECT-DROP
 
   - DOMAIN-SUFFIX,talkatone.com,Talkatone
   - DOMAIN-SUFFIX,tktn.be,Talkatone

@@ -64,11 +64,6 @@ proxy-groups:
     type: select
     include-all: true
 
-  - name: Final
-    type: select
-    proxies:
-      - Proxy
-
   - name: AI
     type: select
     include-all: true
@@ -155,7 +150,7 @@ rules:
 
   # 大陆域名规则未命中的大陆 IP 兜底；前面的服务专用代理规则优先级更高。
   - GEOIP,CN,DIRECT,no-resolve
-  - MATCH,Final
+  - MATCH,Proxy
 
 rule-providers: #!replace
   Reject:

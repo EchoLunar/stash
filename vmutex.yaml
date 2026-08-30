@@ -1,0 +1,217 @@
+---
+name: 自用覆写
+desc: 3x-ui 仅负责下发节点；本覆写接管 DNS、策略组、规则和规则集。🍻！
+icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
+
+# 通用设置
+mode: rule
+log-level: info
+# DNS模块
+dns:
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fake-ip-filter:
+    - "*"
+    - "+.lan"
+    - "+.local"
+    # 服务提供商:
+proxy-providers:
+  Subscribe:
+    url: http://your-service-provider # 用你的订阅链接替换
+    interval: 86400
+    benchmark-url: http://www.gstatic.com/generate_204
+    benchmark-timeout: 5
+
+proxy-groups: 
+  - name: Proxy
+    type: select
+    include-all: true
+
+  - name: Final
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: AI
+    type: select
+    include-all: true
+
+  - name: Apple
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: APNs
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: TestFlight
+    type: select
+    proxies:
+      - Proxy
+      - DIRECT
+
+  - name: Talkatone
+    type: select
+    include-all: true
+
+  - name: Binance
+    type: select
+    include-all: true
+
+  - name: Bybit
+    type: select
+    include-all: true
+
+  - name: Polymarket
+    type: select
+    include-all: true
+
+  - name: TikTok
+    type: select
+    include-all: true
+
+rules: 
+
+  # 个人固定例外：Oracle VPS 及 Oracle 控制台域名直连。
+  # cloud.oracle.com 属于 oracle.com，DOMAIN-SUFFIX 会覆盖其子域名。
+  - IP-CIDR,149.118.147.51/32,DIRECT,no-resolve
+  - IP-CIDR6,2603:c030:304:9f01:0:49da:2c15:4454/128,DIRECT,no-resolve
+  - IP-CIDR,149.118.135.225/32,DIRECT,no-resolve
+  - IP-CIDR6,2603:c030:304:9f01:0:11b3:17c:f41d/128,DIRECT,no-resolve
+  - DOMAIN-SUFFIX,oracle.com,DIRECT
+  - DOMAIN-SUFFIX,oraclecloud.com,DIRECT
+  - DOMAIN-SUFFIX,5202323.xyz,DIRECT
+
+  # 个人固定代理例外。
+  - DOMAIN-SUFFIX,dmit.io,Proxy
+  - DOMAIN-SUFFIX,4hu.com,Proxy
+  - DOMAIN-SUFFIX,4hu.tv,Proxy
+
+  - DOMAIN-SUFFIX,talkatone.com,Talkatone
+  - DOMAIN-SUFFIX,tktn.be,Talkatone
+  - DOMAIN-SUFFIX,tktn.at,Talkatone
+  - RULE-SET,Binance,Binance
+  - DOMAIN-KEYWORD,binance,Binance
+  - RULE-SET,Bybit,Bybit
+  - DOMAIN-KEYWORD,polymarket,Polymarket
+  - RULE-SET,APNs,APNs
+  - RULE-SET,TestFlight,TestFlight
+  - RULE-SET,Reject,REJECT
+
+  - RULE-SET,AI,AI
+  - RULE-SET,YouTube,Proxy
+  - RULE-SET,Telegram,Proxy
+  - RULE-SET,TikTok,TikTok
+  - RULE-SET,AppleCN,DIRECT
+  - RULE-SET,AppleServers,Apple
+  # 以下是国内识别链：域名规则优先，GEOIP,CN 只负责 IP 兜底。
+  - RULE-SET,GeositeCN_Domain,DIRECT
+  - RULE-SET,CloudflareCN,DIRECT
+  - RULE-SET,AmazonCN,DIRECT
+  - RULE-SET,LAN,DIRECT
+
+  # 大陆域名规则未命中的大陆 IP 兜底；前面的服务专用代理规则优先级更高。
+  - GEOIP,CN,DIRECT,no-resolve
+  - MATCH,Final
+
+rule-providers: #!replace
+  Reject:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Reject.list
+
+  AI:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list
+
+  YouTube:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list
+
+  Telegram:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list
+
+  TikTok:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list
+
+  Binance:
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
+
+  Bybit:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list
+
+  AppleCN:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list
+
+  AppleServers:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list
+
+  TestFlight:
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TestFlight/TestFlight.yaml
+
+  # 上游 WhiteList-02-Min.AntiAD 使用的高精度中国域名集合。
+  # ChinaMax（近十万条）按上游模板默认保持关闭，避免移动端内存和功耗开销。
+  GeositeCN_Domain:
+    behavior: domain
+    format: yaml
+    interval: 86400
+    url: https://cdn.jsdelivr.net/gh/Accademia/Additional_Rule_For_Clash@latest/GeositeCN/GeositeCN_Domain.yaml
+
+  CloudflareCN:
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflarecn/Cloudflarecn.yaml
+
+  AmazonCN:
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AmazonCN/AmazonCN.yaml
+
+  LAN:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list
+
+  APNs:
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/apns.list

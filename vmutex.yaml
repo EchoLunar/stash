@@ -32,7 +32,15 @@ dns:
   # DNS 不跟随代理规则，由上面的 DNS 策略直接决定解析出口。
   follow-rule: false
 
-# 模板不声明 proxy-providers，避免重新载入模板时覆盖 Stash 中手动添加的远程代理集。
+# 远程代理集占位配置；使用前请在 Stash 中替换为真实订阅地址。
+# 此处不放入任何真实订阅、Token 或节点凭据。
+proxy-providers:
+  Subscribe:
+    url: https://example.com/your-subscription
+    interval: 86400
+    benchmark-url: http://www.gstatic.com/generate_204
+    benchmark-timeout: 5
+
 proxy-groups:
   - name: Proxy
     type: select

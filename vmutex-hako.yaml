@@ -1,14 +1,28 @@
+# Clash by Hako 测试版
+# 基于 vmutex.yaml；本文件不包含节点或订阅凭据。
+# 请在 Clash 中另行导入相同的节点订阅，或导入包含 proxies/proxy-providers 的完整 mihomo 配置。
+
 # 通用设置
 mode: rule
 log-level: info
+ipv6: true
+unified-delay: true
+tcp-concurrent: true
+
+# Hako 推荐保存已选节点和 Fake-IP 映射，减少重启或唤醒后的状态丢失。
+profile:
+  store-selected: true
+  store-fake-ip: true
+
 # DNS 模块
 dns:
   enable: true
   ipv6: true
-  # 使用真实 IP（Clash/Stash 的 redir-host 模式）进行对照测试。
-  enhanced-mode: redir-host
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
 
-  # 保持 bootstrap 独立，让 Stash 可以自行解析 DoH 端点。
+  # 保持 bootstrap 独立，让 Hako 可以自行解析 DoH 端点。
   default-nameserver:
     - 'https://223.5.5.5/dns-query'
     - 'https://1.1.1.1/dns-query'
@@ -29,18 +43,75 @@ dns:
     - 'https://dns.alidns.com/dns-query'
     - 'https://doh.pub/dns-query'
 
-  # DNS 不跟随代理规则，由上面的 DNS 策略直接决定解析出口。
-  follow-rule: false
+  # Hako/mihomo 对应 Stash 的 follow-rule: false。
+  respect-rules: false
 
-# 远程代理集占位配置；使用前请在 Stash 中替换为真实订阅地址。
-# 此处不放入任何真实订阅、Token 或节点凭据。
-proxy-providers:
-  Subscribe:
-    url: https://example.com/your-subscription
-    interval: 86400
-    benchmark-url: http://www.gstatic.com/generate_204
-    benchmark-timeout: 5
+  # 只有确实需要真实 IP 的特殊服务放在这里，不能使用 "*"。
+  fake-ip-filter:
+    - "+.lan"
+    - "+.local"
+    - "localhost"
+    - "*.localhost"
+    - "+.localdomain"
+    - "+.home.arpa"
+    - "lens.l.google.com"
+    - "stun.l.google.com"
+    # Apple 系统更新及相关组件
+    - "appldnld.apple.com"
+    - "configuration.apple.com"
+    - "gdmf.apple.com"
+    - "mesu.apple.com"
+    - "gg.apple.com"
+    - "gs.apple.com"
+    - "ig.apple.com"
+    - "oscdn.apple.com"
+    - "osrecovery.apple.com"
+    - "skl.apple.com"
+    - "swscan.apple.com"
+    - "swcdn.apple.com"
+    - "swdist.apple.com"
+    - "swdownload.apple.com"
+    - "updates-http.cdn-apple.com"
+    - "updates.cdn-apple.com"
+    - "xp.apple.com"
+    - "gdmf-ados.apple.com"
+    - "gsra.apple.com"
+    - "wkms-public.apple.com"
+    - "fcs-keys-pub-prod.cdn-apple.com"
+    # 时间同步
+    - "time.*.com"
+    - "time.*.gov"
+    - "time.*.edu.cn"
+    - "time.*.apple.com"
+    - "time1.*.com"
+    - "time2.*.com"
+    - "time3.*.com"
+    - "time4.*.com"
+    - "time5.*.com"
+    - "time6.*.com"
+    - "time7.*.com"
+    - "ntp.*.com"
+    - "ntp1.*.com"
+    - "ntp2.*.com"
+    - "ntp3.*.com"
+    - "ntp4.*.com"
+    - "ntp5.*.com"
+    - "ntp6.*.com"
+    - "ntp7.*.com"
+    - "*.time.edu.cn"
+    - "*.ntp.org.cn"
+    - "+.pool.ntp.org"
+    - "time1.cloud.tencent.com"
+    - "+.stun.*.*"
+    - "+.stun.*.*.*"
+    - "+.stun.*.*.*.*"
+    - "+.stun.*.*.*.*.*"
+    - "+.srv.nintendo.net"
+    - "+.stun.playstation.net"
+    - "*.msftconnecttest.com"
+    - "*.msftncsi.com"
 
+# Clash by Hako 使用标准 mihomo 的 include-all；节点/Provider 需要在 Clash 中另行导入。
 proxy-groups:
   - name: Proxy
     type: select
@@ -110,7 +181,7 @@ rules:
   - DOMAIN-KEYWORD,polymarket,Polymarket
   - RULE-SET,APNs,APNs
   - RULE-SET,TestFlight,TestFlight
-  # Stash 原生广告域名集合；REJECT-DROP 可避免被拦截应用反复重试。
+  # mihomo 广告域名集合；REJECT-DROP 可避免被拦截应用反复重试。
   - GEOSITE,category-ads,REJECT-DROP
 
   - RULE-SET,AI,AI
@@ -124,7 +195,7 @@ rules:
   - RULE-SET,CloudflareCN,DIRECT
   - RULE-SET,AmazonCN,DIRECT
   - RULE-SET,LAN,DIRECT
-  # DNS follow-rule 需要明确的域名直连规则，确保中国域名使用本地出口解析。
+  # respect-rules 已关闭，由 nameserver-policy 直接决定 DNS 出口。
   - GEOSITE,cn,DIRECT
 
   # 大陆域名规则未命中的大陆 IP 兜底；前面的服务专用代理规则优先级更高。
@@ -133,54 +204,63 @@ rules:
 
 rule-providers:
   AI:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list
 
   YouTube:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list
 
   Telegram:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list
 
   TikTok:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list
 
   Binance:
+    type: http
     behavior: classical
     format: yaml
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
 
   Bybit:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list
 
   AppleCN:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list
 
   AppleServers:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list
 
   TestFlight:
+    type: http
     behavior: classical
     format: yaml
     interval: 86400
@@ -189,30 +269,35 @@ rule-providers:
   # 上游 WhiteList-02-Min.AntiAD 使用的高精度中国域名集合。
   # ChinaMax（近十万条）按上游模板默认保持关闭，避免移动端内存和功耗开销。
   GeositeCN_Domain:
+    type: http
     behavior: domain
     format: yaml
     interval: 86400
     url: https://cdn.jsdelivr.net/gh/Accademia/Additional_Rule_For_Clash@latest/GeositeCN/GeositeCN_Domain.yaml
 
   CloudflareCN:
+    type: http
     behavior: classical
     format: yaml
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Cloudflarecn/Cloudflarecn.yaml
 
   AmazonCN:
+    type: http
     behavior: classical
     format: yaml
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AmazonCN/AmazonCN.yaml
 
   LAN:
+    type: http
     behavior: classical
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list
 
   APNs:
+    type: http
     behavior: classical
     format: yaml
     interval: 86400

@@ -1,0 +1,189 @@
+# 多平台代理配置：Loon 版本
+#
+# 本文件不包含节点或订阅凭据。
+# 节点可以在 Loon 中单独导入，或在 [Remote Proxy] 中填写订阅；[Remote Filter] 的 All
+# 会汇总当前配置中可见的本地节点和订阅节点。
+
+[General]
+
+# 对应 Stash 的 ipv6 = true；Loon 新版使用 ip-mode。
+ip-mode = dual
+
+# > Google，Cloudflare，腾讯，阿里云 DoH
+doh-server = https://dns.google/dns-query,https://1.1.1.1/dns-query,https://doh.pub/dns-query,https://dns.alidns.com/dns-query
+
+# > IPv6 支持（默认关闭）
+ipv6 = false
+
+# > 跳过代理
+skip-proxy = 192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,localhost,*.local,e.crashlynatics.com,*.cmpassport.com,*.jegotrip.com.cn,*.icitymobile.mobi,id6.me,*.pingan.com.cn,*.cmbchina.com
+
+# > 旁路隧道
+bypass-tun = 10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.0.0.0/24,192.0.2.0/24,192.88.99.0/24,192.168.0.0/16,198.51.100.0/24,203.0.113.0/24,224.0.0.0/4,255.255.255.255/32
+
+# > dns服务器
+dns-server = system,223.5.5.5,223.6.6.6,119.29.29.29
+
+# > 节点连续失败 3 后进行节点切换
+switch-node-after-failure-times = 3
+
+# 会议和实时音视频依赖 UDP/STUN，不主动关闭。
+allow-udp-proxy = true
+disable-stun = false
+
+# > 代理测试网址
+proxy-test-url = http://www.gstatic.com/generate_204
+
+# > 测试超时
+test-timeout = 2
+
+# > 接口模式
+interface-mode = auto
+
+sni-sniffing = true
+
+# 如果订阅格式无法被 Loon 直接识别，可在添加节点时手动启用解析器。
+# resource-parser = https://github.com/sub-store-org/Sub-Store/releases/latest/download/sub-store-parser.loon.min.js
+
+[Host]
+# 局域网/本地域名交给系统 DNS，避免把私有名称发送到公共 DNS。
+localhost = server:system
+*.lan = server:system
+*.local = server:system
+*.localdomain = server:system
+*.home.arpa = server:system
+*.in-addr.arpa = server:system
+*.ip6.arpa = server:system
+
+# 国内域名使用国内加密 DNS。
+# 这是 Loon 的实际可行边界：Remote Rule 只控制流量策略，不能直接控制 DNS 上游；
+# 因此这里维护高频国内域名，未命中的国内域名仍会走全局国外 DoH。
+*.cn = server:https://doh.pub/dns-query
+*.中国 = server:https://doh.pub/dns-query
+*.公司 = server:https://doh.pub/dns-query
+*.网络 = server:https://doh.pub/dns-query
+*.baidu.com = server:https://doh.pub/dns-query
+*.bdstatic.com = server:https://doh.pub/dns-query
+*.bcebos.com = server:https://doh.pub/dns-query
+*.taobao.com = server:https://doh.pub/dns-query
+*.tmall.com = server:https://doh.pub/dns-query
+*.tbcdn.cn = server:https://doh.pub/dns-query
+*.jd.com = server:https://doh.pub/dns-query
+*.360buyimg.com = server:https://doh.pub/dns-query
+*.qq.com = server:https://doh.pub/dns-query
+*.tencent.com = server:https://doh.pub/dns-query
+*.weixin.com = server:https://doh.pub/dns-query
+*.wechat.com = server:https://doh.pub/dns-query
+*.alicdn.com = server:https://doh.pub/dns-query
+*.aliyun.com = server:https://doh.pub/dns-query
+*.aliyuncs.com = server:https://doh.pub/dns-query
+*.alipay.com = server:https://doh.pub/dns-query
+*.alipayobjects.com = server:https://doh.pub/dns-query
+*.163.com = server:https://doh.pub/dns-query
+*.126.com = server:https://doh.pub/dns-query
+*.126.net = server:https://doh.pub/dns-query
+*.127.net = server:https://doh.pub/dns-query
+*.netease.com = server:https://doh.pub/dns-query
+*.mi.com = server:https://doh.pub/dns-query
+*.xiaomi.com = server:https://doh.pub/dns-query
+*.bilibili.com = server:https://doh.pub/dns-query
+*.bilivideo.com = server:https://doh.pub/dns-query
+*.douyin.com = server:https://doh.pub/dns-query
+*.douyincdn.com = server:https://doh.pub/dns-query
+*.pstatp.com = server:https://doh.pub/dns-query
+*.toutiao.com = server:https://doh.pub/dns-query
+*.snssdk.com = server:https://doh.pub/dns-query
+*.xiaohongshu.com = server:https://doh.pub/dns-query
+*.xhscdn.com = server:https://doh.pub/dns-query
+*.weibo.com = server:https://doh.pub/dns-query
+*.sina.com.cn = server:https://doh.pub/dns-query
+*.sinaimg.cn = server:https://doh.pub/dns-query
+*.meituan.com = server:https://doh.pub/dns-query
+*.dianping.com = server:https://doh.pub/dns-query
+*.ctrip.com = server:https://doh.pub/dns-query
+*.qunar.com = server:https://doh.pub/dns-query
+*.huawei.com = server:https://doh.pub/dns-query
+*.vmall.com = server:https://doh.pub/dns-query
+*.vivo.com.cn = server:https://doh.pub/dns-query
+*.oppo.com = server:https://doh.pub/dns-query
+*.csdn.net = server:https://doh.pub/dns-query
+
+[Remote Proxy]
+
+# 可在这里填写订阅。不要把带 token 的真实地址提交到公开仓库。
+# 示例：我的节点 = https://example.com/your-subscription
+
+[Remote Filter]
+
+# 从 Loon 当前可见的全部本地节点和订阅节点中筛选；.* 是匹配全部节点名的正则。
+All = NameRegex, FilterKey = ".*"
+
+[Proxy]
+
+# 可在这里添加单个本地节点；也可以直接使用 Loon 的节点编辑器添加。
+
+[Proxy Group]
+
+# 总出口和需要代理的业务组默认都从 All 节点筛选器取节点。
+Proxy = select,All,DIRECT
+AI = select,All,DIRECT
+Talkatone = select,All,DIRECT
+Binance = select,All,DIRECT
+Bybit = select,All,DIRECT
+Polymarket = select,All,DIRECT
+TikTok = select,All,DIRECT
+
+# Apple 相关服务保留手动切换能力；默认沿用总出口或直连。
+Apple = select,Proxy,DIRECT
+APNs = select,Proxy,DIRECT
+TestFlight = select,Proxy,DIRECT
+
+[Rule]
+
+# 个人固定例外：Oracle VPS、控制台和自有服务直连。
+IP-CIDR,149.118.147.51/32,DIRECT,no-resolve
+IP-CIDR6,2603:c030:304:9f01:0:49da:2c15:4454/128,DIRECT,no-resolve
+IP-CIDR,149.118.135.225/32,DIRECT,no-resolve
+IP-CIDR6,2603:c030:304:9f01:0:11b3:17c:f41d/128,DIRECT,no-resolve
+DOMAIN-SUFFIX,oracle.com,DIRECT
+DOMAIN-SUFFIX,oraclecloud.com,DIRECT
+DOMAIN-SUFFIX,5202323.xyz,DIRECT
+
+# 业务专用规则。
+DOMAIN-SUFFIX,talkatone.com,Talkatone
+DOMAIN-SUFFIX,tktn.be,Talkatone
+DOMAIN-SUFFIX,tktn.at,Talkatone
+DOMAIN-KEYWORD,binance,Binance
+DOMAIN-KEYWORD,bybit,Bybit
+DOMAIN-KEYWORD,polymarket,Polymarket
+
+# 中国 IP 兜底；中国流量、Apple 和服务专用策略由下方规则处理。
+GEOIP,CN,DIRECT
+FINAL,Proxy
+
+[Remote Rule]
+
+# 广告规则：Loon 使用 Remote Rule，不能直接使用 mihomo 的 GEOSITE。
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list,policy=REJECT,tag=Advertising,enabled=true
+
+# AI、媒体、通信和业务服务。
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list,policy=AI,tag=AI,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list,policy=Proxy,tag=YouTube,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list,policy=Proxy,tag=Telegram,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list,policy=TikTok,tag=TikTok,enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Binance/Binance.list,policy=Binance,tag=Binance,enabled=true
+https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list,policy=Bybit,tag=Bybit,enabled=true
+
+# Apple 服务：AppleCN 保持直连，AppleServers 保留 Proxy/DIRECT 手动切换。
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list,policy=DIRECT,tag=AppleCN,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list,policy=Apple,tag=AppleServers,enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/TestFlight/TestFlight.list,policy=TestFlight,tag=TestFlight,enabled=true
+
+# 中国域名/IP 和 Cloudflare/Amazon 相关规则使用 Loon 原生 list，避免直接引用 Clash YAML。
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/China/China.list,policy=DIRECT,tag=China,enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Cloudflare/Cloudflare.list,policy=DIRECT,tag=Cloudflare,enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/AmazonCN/AmazonCN.list,policy=DIRECT,tag=AmazonCN,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list,policy=DIRECT,tag=LAN,enabled=true
+
+# Apple Push 使用专门的 Loon 文本规则；需要时可在 APNs 组中选择 Proxy 或 DIRECT。
+https://github.com/Repcz/Tool/raw/X/Loon/Rules/APNs.list,policy=APNs,tag=APNs,enabled=true

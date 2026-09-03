@@ -13,50 +13,16 @@ profile:
 
 # 完全替换订阅中的 DNS，避免与订阅配置递归合并。
 dns: #!replace
-  enable: true
-  ipv6: true
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-
-  # 保持 bootstrap 独立，让 Stash 可以自行解析 DoH 端点。
   default-nameserver:
-    - 'https://223.5.5.5/dns-query'
-    - 'https://1.1.1.1/dns-query'
-
-  # 非策略 DNS 使用 Cloudflare 和 Google DoH。
-  # Stash 会并行查询并采用先成功的响应。
+    - 119.29.29.29
+    - 223.5.5.5
   nameserver:
-    - 'https://cloudflare-dns.com/dns-query'
-    - 'https://dns.google/dns-query'
-
-  nameserver-policy:
-    'geosite:private':
-      - system
-    'geosite:cn':
-      - 'https://dns.alidns.com/dns-query'
-      - 'https://doh.pub/dns-query'
-
-  # 独立解析代理节点域名，避免 DNS 递归。
-  proxy-server-nameserver:
-    - 'https://dns.alidns.com/dns-query'
-    - 'https://doh.pub/dns-query'
-
-  # DNS 不跟随代理规则，由上面的 DNS 策略直接决定解析出口。
-  follow-rule: false
-
-  # 只有确实需要真实 IP 的特殊服务放在这里，不能使用 "*"。
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
   fake-ip-filter:
+    - "*"
     - "+.lan"
     - "+.local"
-    - "localhost"
-    - "+.stun.*.*"
-    - "+.stun.*.*.*"
-    - "+.stun.*.*.*.*"
-    - "+.stun.*.*.*.*.*"
-    - "+.srv.nintendo.net"
-    - "+.stun.playstation.net"
-    - "*.msftconnecttest.com"
-    - "*.msftncsi.com"
 
 # 不覆写 proxies 或 proxy-providers；节点由 Stash 中现有的订阅或本地配置提供。
 proxy-groups: #!replace

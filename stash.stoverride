@@ -13,16 +13,34 @@ profile:
 
 # 完全替换订阅中的 DNS，避免与订阅配置递归合并。
 dns: #!replace
+  enable: true
+  ipv6: true
+  # 明确使用真实 IP，不依赖 fake-ip-filter: "*" 模拟 Real-IP。
+  enhanced-mode: redir-host
+
   default-nameserver:
     - 119.29.29.29
     - 223.5.5.5
+
+  # 非中国域名使用境外 DoH；follow-rule=true 时通过代理规则转发。
   nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-  fake-ip-filter:
-    - "*"
-    - "+.lan"
-    - "+.local"
+    - 'https://cloudflare-dns.com/dns-query'
+    - 'https://dns.google/dns-query'
+
+  # 中国域名使用国内 DoH，避免国内服务被代理或解析到境外 CDN。
+  nameserver-policy:
+    'geosite:private':
+      - system
+    'geosite:cn':
+      - 'https://dns.alidns.com/dns-query'
+      - 'https://doh.pub/dns-query'
+
+  # 代理节点域名走独立解析路径，避免 follow-rule=true 产生 DNS 递归。
+  proxy-server-nameserver:
+    - 'https://dns.alidns.com/dns-query'
+    - 'https://doh.pub/dns-query'
+
+  follow-rule: true
 
 # 不覆写 proxies 或 proxy-providers；节点由 Stash 中现有的订阅或本地配置提供。
 proxy-groups: #!replace
@@ -85,6 +103,12 @@ rules: #!replace
 
   # 自有节点及服务统一直连；该规则覆盖根域名和所有子域名。
   - DOMAIN-SUFFIX,5202323.xyz,DIRECT
+
+  # follow-rule=true 时，国内 DNS 直连，境外 DNS 走代理。
+  - DOMAIN-SUFFIX,dns.alidns.com,DIRECT
+  - DOMAIN-SUFFIX,doh.pub,DIRECT
+  - DOMAIN-SUFFIX,cloudflare-dns.com,Proxy
+  - DOMAIN-SUFFIX,dns.google,Proxy
 
   # 业务专用规则优先于广告、地区和最终兜底规则。
   - DOMAIN-SUFFIX,talkatone.com,Talkatone

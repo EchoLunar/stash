@@ -8,42 +8,42 @@
 
 # 对应 Stash 的 ipv6 = true；Loon 新版使用 ip-mode。
 ip-mode = dual
+ipv6-vif = auto
 
-# > Google，Cloudflare，腾讯，阿里云 DoH
-doh-server = https://dns.google/dns-query,https://1.1.1.1/dns-query,https://doh.pub/dns-query,https://dns.alidns.com/dns-query
+# > DNS 统一交给自建 DoH，由服务端处理 DNS 分流。
+doh-server = https://dns6.5202323.xyz:8443/dns-query,https://hkl.dns6.5202323.xyz:8443/dns-query
 
-# > IPv6 支持（默认关闭）
-ipv6 = false
+# > IPv6 支持
+ipv6 = true
 
 # > 跳过代理
 skip-proxy = 192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,localhost,*.local,e.crashlynatics.com,*.cmpassport.com,*.jegotrip.com.cn,*.icitymobile.mobi,id6.me,*.pingan.com.cn,*.cmbchina.com
 
 # > 旁路隧道
-bypass-tun = 10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.0.0.0/24,192.0.2.0/24,192.88.99.0/24,192.168.0.0/16,198.51.100.0/24,203.0.113.0/24,224.0.0.0/4,255.255.255.255/32
+bypass-tun = 10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.0.0.0/24,192.0.2.0/24,192.88.99.0/24,192.168.0.0/16,198.51.100.0/24,203.0.113.0/24,224.0.0.0/4,255.255.255.255/32,2603:c030:304:9f01:0:49da:2c15:4454/128,2603:c030:304:9f01:0:11b3:17c:f41d/128
 
 # > dns服务器
-dns-server = system,223.5.5.5,223.6.6.6,119.29.29.29
+dns-server = system
+allow-wifi-access = true
+wifi-access-http-port = 7222
+wifi-access-socks5-port = 7221
 
-# > 节点连续失败 3 后进行节点切换
-switch-node-after-failure-times = 3
 
 # 会议和实时音视频依赖 UDP/STUN，不主动关闭。
 allow-udp-proxy = true
-disable-stun = false
+disable-stun = true
 
 # > 代理测试网址
 proxy-test-url = http://www.gstatic.com/generate_204
+internet-test-url = http://wifi.vivo.com.cn/generate_204
 
 # > 测试超时
-test-timeout = 2
+test-timeout = 3
 
 # > 接口模式
 interface-mode = auto
 
 sni-sniffing = true
-
-# 如果订阅格式无法被 Loon 直接识别，可在添加节点时手动启用解析器。
-# resource-parser = https://github.com/sub-store-org/Sub-Store/releases/latest/download/sub-store-parser.loon.min.js
 
 [Host]
 # 局域网/本地域名交给系统 DNS，避免把私有名称发送到公共 DNS。
@@ -55,58 +55,7 @@ localhost = server:system
 *.in-addr.arpa = server:system
 *.ip6.arpa = server:system
 
-# 国内域名使用国内加密 DNS。
-# 这是 Loon 的实际可行边界：Remote Rule 只控制流量策略，不能直接控制 DNS 上游；
-# 因此这里维护高频国内域名，未命中的国内域名仍会走全局国外 DoH。
-*.cn = server:https://doh.pub/dns-query
-*.中国 = server:https://doh.pub/dns-query
-*.公司 = server:https://doh.pub/dns-query
-*.网络 = server:https://doh.pub/dns-query
-*.baidu.com = server:https://doh.pub/dns-query
-*.bdstatic.com = server:https://doh.pub/dns-query
-*.bcebos.com = server:https://doh.pub/dns-query
-*.taobao.com = server:https://doh.pub/dns-query
-*.tmall.com = server:https://doh.pub/dns-query
-*.tbcdn.cn = server:https://doh.pub/dns-query
-*.jd.com = server:https://doh.pub/dns-query
-*.360buyimg.com = server:https://doh.pub/dns-query
-*.qq.com = server:https://doh.pub/dns-query
-*.tencent.com = server:https://doh.pub/dns-query
-*.weixin.com = server:https://doh.pub/dns-query
-*.wechat.com = server:https://doh.pub/dns-query
-*.alicdn.com = server:https://doh.pub/dns-query
-*.aliyun.com = server:https://doh.pub/dns-query
-*.aliyuncs.com = server:https://doh.pub/dns-query
-*.alipay.com = server:https://doh.pub/dns-query
-*.alipayobjects.com = server:https://doh.pub/dns-query
-*.163.com = server:https://doh.pub/dns-query
-*.126.com = server:https://doh.pub/dns-query
-*.126.net = server:https://doh.pub/dns-query
-*.127.net = server:https://doh.pub/dns-query
-*.netease.com = server:https://doh.pub/dns-query
-*.mi.com = server:https://doh.pub/dns-query
-*.xiaomi.com = server:https://doh.pub/dns-query
-*.bilibili.com = server:https://doh.pub/dns-query
-*.bilivideo.com = server:https://doh.pub/dns-query
-*.douyin.com = server:https://doh.pub/dns-query
-*.douyincdn.com = server:https://doh.pub/dns-query
-*.pstatp.com = server:https://doh.pub/dns-query
-*.toutiao.com = server:https://doh.pub/dns-query
-*.snssdk.com = server:https://doh.pub/dns-query
-*.xiaohongshu.com = server:https://doh.pub/dns-query
-*.xhscdn.com = server:https://doh.pub/dns-query
-*.weibo.com = server:https://doh.pub/dns-query
-*.sina.com.cn = server:https://doh.pub/dns-query
-*.sinaimg.cn = server:https://doh.pub/dns-query
-*.meituan.com = server:https://doh.pub/dns-query
-*.dianping.com = server:https://doh.pub/dns-query
-*.ctrip.com = server:https://doh.pub/dns-query
-*.qunar.com = server:https://doh.pub/dns-query
-*.huawei.com = server:https://doh.pub/dns-query
-*.vmall.com = server:https://doh.pub/dns-query
-*.vivo.com.cn = server:https://doh.pub/dns-query
-*.oppo.com = server:https://doh.pub/dns-query
-*.csdn.net = server:https://doh.pub/dns-query
+# 公网域名不在客户端做 DNS 分流，统一使用上方自建 DoH。
 
 [Remote Proxy]
 
@@ -164,26 +113,31 @@ FINAL,Proxy
 [Remote Rule]
 
 # 广告规则：Loon 使用 Remote Rule，不能直接使用 mihomo 的 GEOSITE。
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list,policy=REJECT,tag=Advertising,enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list, policy=REJECT, tag=Advertising, enabled=true
 
 # AI、媒体、通信和业务服务。
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list,policy=AI,tag=AI,enabled=true
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list,policy=Proxy,tag=YouTube,enabled=true
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list,policy=Proxy,tag=Telegram,enabled=true
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list,policy=TikTok,tag=TikTok,enabled=true
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Binance/Binance.list,policy=Binance,tag=Binance,enabled=true
-https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list,policy=Bybit,tag=Bybit,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AI.list, policy=AI, tag=AI, enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/YouTube.list, policy=Proxy, tag=YouTube, enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Telegram.list, policy=Proxy, tag=Telegram, enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/TikTok.list, policy=TikTok, tag=TikTok, enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Binance/Binance.list, policy=Binance, tag=Binance, enabled=true
+https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list, policy=Bybit, tag=Bybit, enabled=true
 
 # Apple 服务：AppleCN 保持直连，AppleServers 保留 Proxy/DIRECT 手动切换。
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list,policy=DIRECT,tag=AppleCN,enabled=true
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list,policy=Apple,tag=AppleServers,enabled=true
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/TestFlight/TestFlight.list,policy=TestFlight,tag=TestFlight,enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleCN.list, policy=DIRECT, tag=AppleCN, enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/AppleServers.list, policy=Apple, tag=AppleServers, enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/TestFlight/TestFlight.list, policy=TestFlight, tag=TestFlight, enabled=true
 
 # 中国域名/IP 和 Cloudflare/Amazon 相关规则使用 Loon 原生 list，避免直接引用 Clash YAML。
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/China/China.list,policy=DIRECT,tag=China,enabled=true
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Cloudflare/Cloudflare.list,policy=DIRECT,tag=Cloudflare,enabled=true
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/AmazonCN/AmazonCN.list,policy=DIRECT,tag=AmazonCN,enabled=true
-https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list,policy=DIRECT,tag=LAN,enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/China/China.list, policy=DIRECT, tag=China, enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Cloudflare/Cloudflare.list, policy=DIRECT, tag=Cloudflare, enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/AmazonCN/AmazonCN.list, policy=DIRECT, tag=AmazonCN, enabled=true
+https://raw.githubusercontent.com/Coldvvater/Mononoke/master/Stash/Rules/Lan.list, policy=DIRECT, tag=LAN, enabled=true
 
 # Apple Push 使用专门的 Loon 文本规则；需要时可在 APNs 组中选择 Proxy 或 DIRECT。
-https://github.com/Repcz/Tool/raw/X/Loon/Rules/APNs.list,policy=APNs,tag=APNs,enabled=true
+https://github.com/Repcz/Tool/raw/X/Loon/Rules/APNs.list, policy=APNs, tag=APNs, enabled=true
+
+[Mitm]
+skip-server-cert-verify = false
+ca-p12 = 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
+ca-passphrase = 72658864

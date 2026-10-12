@@ -1,0 +1,150 @@
+proxy-groups:
+  # 总代理和三个分类组均手动选择全部节点，不提供 DIRECT 或自动测速组。
+  # 节点列表为空时拒绝连接，避免回退到直连。
+  - name: PROXY
+    type: select
+    include-all: true
+    empty-fallback: REJECT
+  - name: AI
+    type: select
+    include-all: true
+    empty-fallback: REJECT
+  - name: YouTube
+    type: select
+    include-all: true
+    empty-fallback: REJECT
+  - name: Telegram
+    type: select
+    include-all: true
+    empty-fallback: REJECT
+rules:
+  # 自定义直连规则集优先于下方分类；在远程列表中维护自己的 IP 和域名。
+  - RULE-SET,vmutex,DIRECT
+  - GEOIP,private,DIRECT,no-resolve
+  - GEOSITE,private,DIRECT
+  - GEOSITE,category-ai-!cn,AI
+  - GEOSITE,youtube,YouTube
+  - GEOSITE,netflix,PROXY
+  - GEOIP,netflix,PROXY,no-resolve
+  - GEOSITE,telegram,Telegram
+  - GEOIP,telegram,Telegram,no-resolve
+  - GEOSITE,disney,PROXY
+  - GEOSITE,hbo,PROXY
+  - GEOSITE,spotify,PROXY
+  - GEOSITE,tiktok,PROXY
+  - GEOSITE,twitch,PROXY
+  - GEOSITE,primevideo,PROXY
+  - GEOSITE,bahamut,PROXY
+  - GEOSITE,biliintl,PROXY
+  - GEOSITE,dazn,PROXY
+  - GEOSITE,hulu,PROXY
+  - GEOSITE,abema,PROXY
+  - GEOSITE,bbc,PROXY
+  - GEOSITE,dmm,PROXY
+  - GEOSITE,niconico,PROXY
+  - GEOSITE,viu,PROXY
+  - GEOSITE,soundcloud,PROXY
+  - GEOSITE,discoveryplus,PROXY
+  - GEOSITE,epicgames,PROXY
+  - GEOSITE,origin,PROXY
+  - GEOSITE,sony,PROXY
+  - GEOSITE,nintendo,PROXY
+  - GEOSITE,steam,PROXY
+  - GEOSITE,github,PROXY
+  - GEOSITE,apple,DIRECT
+  - GEOSITE,microsoft,DIRECT
+  - GEOSITE,bilibili,DIRECT
+  - GEOSITE,googlefcm,PROXY
+  - GEOSITE,geolocation-!cn,PROXY
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,PROXY
+rule-providers:
+  vmutex:
+    type: http
+    # 原始 .list 为逐行规则，包含域名和 IP，使用 classical + text。
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/Rules/vmutex.list
+    path: ./ruleset/vmutex.list
+    # 每 24 小时检查更新，下载与更新经 PROXY。
+    interval: 86400
+    proxy: PROXY
+dns:
+  # 启用内置 DNS 服务。
+  enable: true
+
+  # 返回真实 IP；初次查询按下方与业务域名规则同序的 policy 选择上游。
+  # GEOIP / IP-CIDR 属于 IP 判断，无法在初次解析前据此选择 DNS。
+  enhanced-mode: redir-host
+
+  # 公共 DoH 已通过 #策略组 明确指定出口，无需再按 DNS 服务器 IP 匹配 rules。
+  # system 配置不指定代理；Hako 会做平台适配，实际以生效配置和日志为准。
+  respect-rules: false
+
+  # 未命中 policy 时，对应业务规则末尾的 MATCH,PROXY。
+  # Cloudflare + Google DoH 均经 PROXY 查询；两个上游并发查询，并非主备顺序。
+  # 使用 IP 端点，避免启动时还要解析 DoH 服务器域名。
+  nameserver:
+    - 'https://1.1.1.1/dns-query#PROXY'
+    - 'https://8.8.8.8/dns-query#PROXY'
+
+  # DIRECT 出口需要按域名解析 / 重新解析目标时，使用系统 DNS。
+  # 仅持有目标 IP 的连接不会因此反查域名；TUN + redir-host 的 UDP 也不保证重新解析。
+  direct-nameserver:
+    - system
+  # DIRECT 专用解析不沿用 nameserver-policy，使用上面配置的 system。
+  direct-nameserver-follow-policy: false
+
+  # 按与 rules 相同的域名分类顺序匹配，首个命中生效，优先于 nameserver。
+  # 代理分类显式列在 cn 之前，避免重叠域名被国内 DNS policy 提前截获。
+  # AI、YouTube、Telegram 的 DoH 跟随各组选择的节点，其余代理分类跟随 PROXY。
+  nameserver-policy:
+    # 首条固定直连规则集：仅其中的域名规则参与 DNS 匹配，IP 网段不参与。
+    # 与业务规则共用远程 vmutex 列表，更新域名后无需在这里重复维护。
+    'rule-set:vmutex':
+      - system
+    # 私有 / 局域网域名。
+    'geosite:private':
+      - system
+
+    # AI 优先于 Microsoft 等较宽泛的分类，重叠域名也经 AI 组解析和连接。
+    'geosite:category-ai-!cn':
+      - 'https://1.1.1.1/dns-query#AI'
+      - 'https://8.8.8.8/dns-query#AI'
+    'geosite:youtube':
+      - 'https://1.1.1.1/dns-query#YouTube'
+      - 'https://8.8.8.8/dns-query#YouTube'
+    'geosite:netflix':
+      - 'https://1.1.1.1/dns-query#PROXY'
+      - 'https://8.8.8.8/dns-query#PROXY'
+    'geosite:telegram':
+      - 'https://1.1.1.1/dns-query#Telegram'
+      - 'https://8.8.8.8/dns-query#Telegram'
+
+    # 原 Streaming、Gaming、GitHub 分类统一使用 PROXY。
+    'geosite:disney,hbo,spotify,tiktok,twitch,primevideo,bahamut,biliintl,dazn,hulu,abema,bbc,dmm,niconico,viu,soundcloud,discoveryplus,epicgames,origin,sony,nintendo,steam,github':
+      - 'https://1.1.1.1/dns-query#PROXY'
+      - 'https://8.8.8.8/dns-query#PROXY'
+
+    # 未被上方分类先命中的 Apple、Microsoft、Bilibili 域名固定直连并使用系统 DNS。
+    'geosite:apple,microsoft,bilibili':
+      - system
+
+    # 原 Google FCM 分类及其他境外域名使用 PROXY。
+    'geosite:googlefcm,geolocation-!cn':
+      - 'https://1.1.1.1/dns-query#PROXY'
+      - 'https://8.8.8.8/dns-query#PROXY'
+
+    # 国内域名兜底；更早命中的代理分类不会落到这里。
+    'geosite:cn':
+      - system
+
+  # DNS 服务器使用域名时的启动解析；上面的 IP 形式 DoH 无需解析服务器域名。
+  default-nameserver:
+    - system
+
+  # 仅解析代理节点自身的域名，独立于目标网站的 DNS 分流。
+  # 使用 system，避免建立代理连接依赖需要经过该代理的 DoH 查询。
+  proxy-server-nameserver:
+    - system

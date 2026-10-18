@@ -2,8 +2,8 @@
 mode: rule
 
 proxy-groups:
-  # 总代理和五个业务组均手动选择全部节点，不提供 DIRECT 或自动测速组。
-  # 节点列表为空时拒绝连接，避免回退到直连。
+  # 总代理和四个业务组均手动选择全部节点；Crypto 额外提供 DIRECT。
+  # 其余组节点列表为空时拒绝连接，避免回退到直连。
   - name: PROXY
     type: select
     include-all: true
@@ -20,20 +20,17 @@ proxy-groups:
     type: select
     include-all: true
     empty-fallback: REJECT
-  - name: Binance
+  - name: Crypto
     type: select
-    include-all: true
-    empty-fallback: REJECT
-  - name: Bybit
-    type: select
+    proxies:
+      - DIRECT
     include-all: true
     empty-fallback: REJECT
 rules:
   # 自定义直连规则集优先于下方分类；在远程列表中维护自己的 IP 和域名。
   - RULE-SET,vmutex,DIRECT
-  # 加密货币交易所专用分组，优先于通用地区与兜底规则。
-  - RULE-SET,Binance,Binance
-  - RULE-SET,Bybit,Bybit
+  # 加密货币合集包含交易所、钱包及行情服务，优先于通用地区与兜底规则。
+  - RULE-SET,Crypto,Crypto
   - GEOIP,private,DIRECT,no-resolve
   - GEOSITE,private,DIRECT
   - GEOSITE,category-ai-!cn,AI
@@ -83,19 +80,12 @@ rule-providers:
     path: ./ruleset/vmutex.list
     # 每 24 小时检查更新。
     interval: 86400
-  Binance:
-    type: http
-    behavior: classical
-    format: yaml
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
-    path: ./ruleset/Binance.yaml
-    interval: 86400
-  Bybit:
+  Crypto:
     type: http
     behavior: classical
     format: text
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list
-    path: ./ruleset/Bybit.list
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list
+    path: ./ruleset/Crypto.list
     interval: 86400
 dns:
   # 启用内置 DNS 服务。
@@ -116,29 +106,26 @@ dns:
     - 'https://1.1.1.1/dns-query#PROXY'
     - 'https://8.8.8.8/dns-query#PROXY'
 
-  # DIRECT 出口需要按域名解析 / 重新解析目标时，使用系统 DNS。
+  # DIRECT 出口需要按域名解析 / 重新解析目标时，优先沿用域名 DNS policy。
   # 仅持有目标 IP 的连接不会因此反查域名；TUN + redir-host 的 UDP 也不保证重新解析。
   direct-nameserver:
     - system
-  # DIRECT 专用解析不沿用 nameserver-policy，使用上面配置的 system。
-  direct-nameserver-follow-policy: false
+  # Crypto 选择 DIRECT 时仍用 #Crypto 的 DoH 直连查询；未命中 policy 才使用 system。
+  direct-nameserver-follow-policy: true
 
   # 集合型 policy 按与 rules 相同的域名分类顺序匹配，首个命中生效，优先于 nameserver。
   # 将来如添加精确/通配域名 policy，须注意其优先级高于集合，不能仅按配置顺序判断。
   # 代理分类显式列在 cn 之前，避免重叠域名被国内 DNS policy 提前截获。
-  # AI、YouTube、Telegram、Binance、Bybit 的 DoH 跟随各组节点，其余代理分类跟随 PROXY。
+  # AI、YouTube、Telegram、Crypto 的 DoH 跟随各组节点，其余代理分类跟随 PROXY。
   nameserver-policy:
     # 首条固定直连规则集：仅其中的域名规则参与 DNS 匹配，IP 网段不参与。
     # 与业务规则共用远程 vmutex 列表，更新域名后无需在这里重复维护。
     'rule-set:vmutex':
       - system
-    # Binance 的 DNS 查询也跟随专用分组，避免被更宽泛的境外域名策略送到 PROXY。
-    'rule-set:Binance':
-      - 'https://1.1.1.1/dns-query#Binance'
-      - 'https://8.8.8.8/dns-query#Binance'
-    'rule-set:Bybit':
-      - 'https://1.1.1.1/dns-query#Bybit'
-      - 'https://8.8.8.8/dns-query#Bybit'
+    # 与业务连接共用 Crypto 合集，DNS 查询跟随 Crypto 分组所选节点或 DIRECT。
+    'rule-set:Crypto':
+      - 'https://1.1.1.1/dns-query#Crypto'
+      - 'https://8.8.8.8/dns-query#Crypto'
     # 私有 / 局域网域名。
     'geosite:private':
       - system

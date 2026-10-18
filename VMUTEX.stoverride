@@ -1,0 +1,201 @@
+---
+name: VMUTEX 分流与 DNS
+desc: 与 VMUTEX.yaml 对应的六个手选分组及域名 DNS 分流；需要 Stash iOS/tvOS 3.6+ 或 macOS 4.3+。
+
+# 作为现有节点订阅的覆写使用。启用前先为六个组选择节点。
+# 规则 / DNS / 分组整体替换，节点和节点订阅由基础配置提供。
+mode: rule
+log-level: info
+
+# Stash 的 DNS 出口由 follow-rule + 下方 DoH 端点规则控制。
+# 不使用 Mihomo 的 #策略组、respect-rules 或 direct-nameserver 字段。
+# fake-ip-filter: ["*"] 让应用查询返回真实 IP，与源配置的 redir-host 目的相同。
+# bootstrap 与节点域名用 system 独立解析，避免代理建立过程递归依赖 DNS。
+# 集合 policy 维持源规则顺序；精确/通配域名 policy 的优先级高于集合。
+dns: #!replace
+  follow-rule: true
+  fake-ip-filter:
+    - '*'
+  default-nameserver:
+    - system
+  proxy-server-nameserver:
+    - system
+  nameserver:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+  nameserver-policy:
+    'rule-set:vmutex':
+      - system
+    'rule-set:Binance':
+      - https://cloudflare-dns.com/dns-query
+    'rule-set:BinanceKeyword':
+      - https://cloudflare-dns.com/dns-query
+    'rule-set:Bybit':
+      - https://dns.google/dns-query
+    'geosite:private':
+      - system
+    'geosite:category-ai-!cn':
+      - https://1.0.0.1/dns-query
+      - https://8.8.4.4/dns-query
+    'geosite:youtube':
+      - https://dns10.quad9.net/dns-query
+    'geosite:netflix':
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    'geosite:telegram':
+      - https://unfiltered.adguard-dns.com/dns-query
+    'geosite:disney,hbo,spotify,tiktok,twitch,primevideo,bahamut':
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    'rule-set:BiliIntl':
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    'geosite:dazn,hulu,abema,bbc,dmm,niconico,viu,soundcloud,discoveryplus':
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    'geosite:epicgames,origin,sony,nintendo,steam,github':
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    'geosite:apple,microsoft,bilibili':
+      - system
+    'geosite:googlefcm,geolocation-!cn':
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    'geosite:cn':
+      - system
+
+# Stash 空策略组会按 DIRECT 处理；显式保留 REJECT，确保组始终非空。
+# REJECT 也可手动选择；include-all 继续纳入基础配置中的全部节点和代理集。
+proxy-groups: #!replace
+  - name: PROXY
+    type: select
+    include-all: true
+    proxies:
+      - REJECT
+  - name: AI
+    type: select
+    include-all: true
+    proxies:
+      - REJECT
+  - name: YouTube
+    type: select
+    include-all: true
+    proxies:
+      - REJECT
+  - name: Telegram
+    type: select
+    include-all: true
+    proxies:
+      - REJECT
+  - name: Binance
+    type: select
+    include-all: true
+    proxies:
+      - REJECT
+  - name: Bybit
+    type: select
+    include-all: true
+    proxies:
+      - REJECT
+
+# 前八条只为 DNS 上游指定出口，域名规则须位于共享解析器 IP 规则之前。
+# 以下业务规则与 VMUTEX.yaml 对齐；Mihomo 的 private 标签转为 Stash 的 LAN。
+rules: #!replace
+  - DOMAIN,cloudflare-dns.com,Binance
+  - DOMAIN,dns.google,Bybit
+  - DOMAIN,dns10.quad9.net,YouTube
+  - DOMAIN,unfiltered.adguard-dns.com,Telegram
+  - IP-CIDR,1.0.0.1/32,AI,no-resolve
+  - IP-CIDR,8.8.4.4/32,AI,no-resolve
+  - IP-CIDR,1.1.1.1/32,PROXY,no-resolve
+  - IP-CIDR,8.8.8.8/32,PROXY,no-resolve
+  - RULE-SET,vmutex,DIRECT
+  - RULE-SET,Binance,Binance
+  - RULE-SET,BinanceKeyword,Binance
+  - RULE-SET,Bybit,Bybit
+  - GEOIP,LAN,DIRECT,no-resolve
+  - GEOSITE,private,DIRECT
+  - GEOSITE,category-ai-!cn,AI
+  - GEOSITE,youtube,YouTube
+  - GEOSITE,netflix,PROXY
+  - RULE-SET,NetflixIP,PROXY,no-resolve
+  - GEOSITE,telegram,Telegram
+  - RULE-SET,TelegramIP,Telegram,no-resolve
+  - GEOSITE,disney,PROXY
+  - GEOSITE,hbo,PROXY
+  - GEOSITE,spotify,PROXY
+  - GEOSITE,tiktok,PROXY
+  - GEOSITE,twitch,PROXY
+  - GEOSITE,primevideo,PROXY
+  - GEOSITE,bahamut,PROXY
+  - RULE-SET,BiliIntl,PROXY
+  - GEOSITE,dazn,PROXY
+  - GEOSITE,hulu,PROXY
+  - GEOSITE,abema,PROXY
+  - GEOSITE,bbc,PROXY
+  - GEOSITE,dmm,PROXY
+  - GEOSITE,niconico,PROXY
+  - GEOSITE,viu,PROXY
+  - GEOSITE,soundcloud,PROXY
+  - GEOSITE,discoveryplus,PROXY
+  - GEOSITE,epicgames,PROXY
+  - GEOSITE,origin,PROXY
+  - GEOSITE,sony,PROXY
+  - GEOSITE,nintendo,PROXY
+  - GEOSITE,steam,PROXY
+  - GEOSITE,github,PROXY
+  - GEOSITE,apple,DIRECT
+  - GEOSITE,microsoft,DIRECT
+  - GEOSITE,bilibili,DIRECT
+  - GEOSITE,googlefcm,PROXY
+  - GEOSITE,geolocation-!cn,PROXY
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,PROXY
+
+# 业务与 DNS 引用同一份域名集合。Netflix / Telegram 的 IP 列表只参与连接匹配。
+# BinanceKeyword 保留源配置的关键词兜底，并让 DNS policy 使用相同匹配条件。
+# BiliIntl 明确列出国际站域名，避免依赖不存在的独立 biliintl geosite 分类。
+rule-providers: #!replace
+  vmutex:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/Rules/vmutex.list
+    path: ./ruleset/vmutex.list
+    interval: 86400
+  Binance:
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Binance/Binance.yaml
+    path: ./ruleset/Binance.yaml
+    interval: 86400
+  BinanceKeyword:
+    type: inline
+    behavior: classical
+    payload:
+      - DOMAIN-KEYWORD,binance
+  Bybit:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/bybit.list
+    path: ./ruleset/Bybit.list
+    interval: 86400
+  BiliIntl:
+    type: inline
+    behavior: domain
+    payload:
+      - +.bilibili.tv
+      - +.biliintl.com
+      - +.dreamcast.hk
+  NetflixIP:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/netflix.list
+    path: ./ruleset/NetflixIP.list
+    interval: 86400
+  TelegramIP:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/telegram.list
+    path: ./ruleset/TelegramIP.list
+    interval: 86400

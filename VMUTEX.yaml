@@ -1,5 +1,8 @@
+# 本文件面向 Mihomo；GEOSITE / GEOIP 分类按 MetaCubeX 完整 geo 数据编写。
+mode: rule
+
 proxy-groups:
-  # 总代理和三个分类组均手动选择全部节点，不提供 DIRECT 或自动测速组。
+  # 总代理和五个业务组均手动选择全部节点，不提供 DIRECT 或自动测速组。
   # 节点列表为空时拒绝连接，避免回退到直连。
   - name: PROXY
     type: select
@@ -30,7 +33,6 @@ rules:
   - RULE-SET,vmutex,DIRECT
   # 加密货币交易所专用分组，优先于通用地区与兜底规则。
   - RULE-SET,Binance,Binance
-  - DOMAIN-KEYWORD,binance,Binance
   - RULE-SET,Bybit,Bybit
   - GEOIP,private,DIRECT,no-resolve
   - GEOSITE,private,DIRECT
@@ -104,7 +106,7 @@ dns:
   enhanced-mode: redir-host
 
   # 公共 DoH 已通过 #策略组 明确指定出口，无需再按 DNS 服务器 IP 匹配 rules。
-  # system 配置不指定代理；Hako 会做平台适配，实际以生效配置和日志为准。
+  # system 使用系统 DNS。
   respect-rules: false
 
   # 未命中 policy 时，对应业务规则末尾的 MATCH,PROXY。
@@ -121,14 +123,22 @@ dns:
   # DIRECT 专用解析不沿用 nameserver-policy，使用上面配置的 system。
   direct-nameserver-follow-policy: false
 
-  # 按与 rules 相同的域名分类顺序匹配，首个命中生效，优先于 nameserver。
+  # 集合型 policy 按与 rules 相同的域名分类顺序匹配，首个命中生效，优先于 nameserver。
+  # 将来如添加精确/通配域名 policy，须注意其优先级高于集合，不能仅按配置顺序判断。
   # 代理分类显式列在 cn 之前，避免重叠域名被国内 DNS policy 提前截获。
-  # AI、YouTube、Telegram 的 DoH 跟随各组选择的节点，其余代理分类跟随 PROXY。
+  # AI、YouTube、Telegram、Binance、Bybit 的 DoH 跟随各组节点，其余代理分类跟随 PROXY。
   nameserver-policy:
     # 首条固定直连规则集：仅其中的域名规则参与 DNS 匹配，IP 网段不参与。
     # 与业务规则共用远程 vmutex 列表，更新域名后无需在这里重复维护。
     'rule-set:vmutex':
       - system
+    # Binance 的 DNS 查询也跟随专用分组，避免被更宽泛的境外域名策略送到 PROXY。
+    'rule-set:Binance':
+      - 'https://1.1.1.1/dns-query#Binance'
+      - 'https://8.8.8.8/dns-query#Binance'
+    'rule-set:Bybit':
+      - 'https://1.1.1.1/dns-query#Bybit'
+      - 'https://8.8.8.8/dns-query#Bybit'
     # 私有 / 局域网域名。
     'geosite:private':
       - system
@@ -148,7 +158,16 @@ dns:
       - 'https://8.8.8.8/dns-query#Telegram'
 
     # 原 Streaming、Gaming、GitHub 分类统一使用 PROXY。
-    'geosite:disney,hbo,spotify,tiktok,twitch,primevideo,bahamut,biliintl,dazn,hulu,abema,bbc,dmm,niconico,viu,soundcloud,discoveryplus,epicgames,origin,sony,nintendo,steam,github':
+    'geosite:disney,hbo,spotify,tiktok,twitch,primevideo,bahamut':
+      - 'https://1.1.1.1/dns-query#PROXY'
+      - 'https://8.8.8.8/dns-query#PROXY'
+    'geosite:biliintl':
+      - 'https://1.1.1.1/dns-query#PROXY'
+      - 'https://8.8.8.8/dns-query#PROXY'
+    'geosite:dazn,hulu,abema,bbc,dmm,niconico,viu,soundcloud,discoveryplus':
+      - 'https://1.1.1.1/dns-query#PROXY'
+      - 'https://8.8.8.8/dns-query#PROXY'
+    'geosite:epicgames,origin,sony,nintendo,steam,github':
       - 'https://1.1.1.1/dns-query#PROXY'
       - 'https://8.8.8.8/dns-query#PROXY'
 

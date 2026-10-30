@@ -77,26 +77,31 @@ proxy-groups: #!replace
     include-all: true
     proxies:
       - REJECT
+      - PROXY
   - name: YouTube
     type: select
     include-all: true
     proxies:
       - REJECT
+      - PROXY
   - name: Telegram
     type: select
     include-all: true
     proxies:
       - REJECT
+      - PROXY
   - name: Binance
     type: select
     include-all: true
     proxies:
       - REJECT
+      - PROXY
   - name: Bybit
     type: select
     include-all: true
     proxies:
       - REJECT
+      - PROXY
 
 # 前八条只为 DNS 上游指定出口，域名规则须位于共享解析器 IP 规则之前。
 # 以下业务规则与 VMUTEX.yaml 对齐；Mihomo 的 private 标签转为 Stash 的 LAN。

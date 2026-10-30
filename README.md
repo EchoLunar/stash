@@ -4,7 +4,7 @@
 
 ## Mihomo 使用
 
-为 `PROXY`、`AI`、`YouTube`、`Telegram`、`Crypto` 分别选择节点。原 Binance、Bybit 分组合并为 `Crypto`，使用 [MetaCubeX 加密货币合集](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list)，每 24 小时检查更新。合集还涵盖其他交易所、钱包和行情服务，并非仅限 Binance、Bybit。
+为 `PROXY` 选择节点；`AI`、`YouTube`、`Telegram`、`Crypto` 可单独选择节点，也可以选择 `PROXY` 跟随总策略。原 Binance、Bybit 分组合并为 `Crypto`，使用 [MetaCubeX 加密货币合集](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list)，每 24 小时检查更新。合集还涵盖其他交易所、钱包和行情服务，并非仅限 Binance、Bybit。
 
 `Crypto` 同时提供 `DIRECT` 和全部订阅节点。选择 MY 时，业务连接与该分类的 Cloudflare / Google DoH 均走 MY；选择 `DIRECT` 时，两者均直连，DNS 服务商仍为 Cloudflare / Google。没有保存过选择时，`DIRECT` 是组内首项，重载后请确认选择。
 
@@ -20,7 +20,7 @@
 
 1. 使用 Stash iOS/tvOS 3.6+ 或 macOS 4.3+；这里使用了 `rule-set:` DNS policy、独立节点 DNS 和 inline 规则集。
 2. 在 Stash 中加载自己的节点订阅，再导入并启用 `VMUTEX.stoverride`。
-3. 为 `PROXY`、`AI`、`YouTube`、`Telegram`、`Binance`、`Bybit` 分别选择节点。`REJECT` 是显式拒绝选项，用来避免 Stash 空组按直连处理。
+3. 为 `PROXY` 选择节点；`AI`、`YouTube`、`Telegram`、`Binance`、`Bybit` 可分别选择节点或选择 `PROXY` 跟随总策略。`REJECT` 是显式拒绝选项，用来避免 Stash 空组按直连处理；请在业务组中主动选择所需出口。
 4. 这份覆写整体替换 DNS、策略组、规则和规则提供器。与仓库旧的 `stash.stoverride` 二选一，避免后应用的覆写覆盖本文件。
 5. 重载配置、清理 DNS 缓存并关闭旧连接后，检查新连接的规则和出口。浏览器自带的加密 DNS 会绕开这里按查询域名选择上游的逻辑，应使用系统 DNS。
 

@@ -49,6 +49,8 @@ proxy-groups: #!replace
   - name: AI
     type: select
     include-all: true
+    proxies:
+      - Proxy
 
   - name: Apple
     type: select

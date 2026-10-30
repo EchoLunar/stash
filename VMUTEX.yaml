@@ -2,7 +2,7 @@
 mode: rule
 
 proxy-groups:
-  # 总代理和四个业务组均手动选择全部节点；Crypto 额外提供 DIRECT。
+  # 业务组可跟随 PROXY 或单独选择节点；Crypto 额外提供 DIRECT。
   # 其余组节点列表为空时拒绝连接，避免回退到直连。
   - name: PROXY
     type: select
@@ -10,20 +10,27 @@ proxy-groups:
     empty-fallback: REJECT
   - name: AI
     type: select
+    proxies:
+      - PROXY
     include-all: true
     empty-fallback: REJECT
   - name: YouTube
     type: select
+    proxies:
+      - PROXY
     include-all: true
     empty-fallback: REJECT
   - name: Telegram
     type: select
+    proxies:
+      - PROXY
     include-all: true
     empty-fallback: REJECT
   - name: Crypto
     type: select
     proxies:
       - DIRECT
+      - PROXY
     include-all: true
     empty-fallback: REJECT
 rules:

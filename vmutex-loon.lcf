@@ -75,7 +75,7 @@ All = NameRegex, FilterKey = ".*"
 
 # 总出口和需要代理的业务组默认都从 All 节点筛选器取节点。
 Proxy = select,All,DIRECT
-AI = select,All,DIRECT
+AI = select,All,Proxy,DIRECT
 Talkatone = select,All,DIRECT
 Binance = select,All,DIRECT
 Bybit = select,All,DIRECT

@@ -6,7 +6,7 @@ IP-CIDR,149.118.135.225/32,no-resolve
 IP-CIDR6,2603:c030:304:9f01:0:49da:2c15:4454/128,no-resolve
 IP-CIDR6,2603:c030:304:9f01:0:11b3:17c:f41d/128,no-resolve
 
-# 直连域名
+# Oracle 与自有域名，出口由 Oracle 分组选择。
 DOMAIN-SUFFIX,oracle.com
 DOMAIN-SUFFIX,oraclecloud.com
 DOMAIN-SUFFIX,5202323.xyz

@@ -28,11 +28,16 @@
 
 ## 连接与 DNS 出口
 
-两版均让固定直连例外优先，业务专用分类排在境外、国内和最终兜底分类之前。每份配置内部，域名连接规则与 DNS policy 共用自己的规则集和 geosite 分类。Mihomo 使用统一 Crypto 分组；Stash 仍使用 Binance、Bybit 独立分组。下表描述 Stash 版。
+两版均让 Oracle 分类优先，业务专用分类排在境外、国内和最终兜底分类之前。每份配置内部，域名连接规则与 DNS policy 共用自己的规则集和 geosite 分类。Mihomo 使用统一 Crypto 分组；Stash 仍使用 Binance、Bybit 独立分组。下表描述 Stash 版。
+
+原 `Rules/vmutex.list` 已重命名为 `Rules/oracle.list`，保留四条 VPS IPv4 / IPv6 和 `oracle.com`、`oraclecloud.com`、`5202323.xyz` 的全部条目。两版均使用 `RULE-SET,oracle,Oracle`，新增的 `Oracle` 手选分组仅含 `DIRECT` 与 `PROXY`：前者直连，后者跟随总代理分组。默认首项为 `DIRECT`，客户端已有保存选择时以客户端为准。切换会同时影响列表内 IP 和域名的所有端口，包括使用 IP 连接的 SSH；不按 SSH / 网页分别分流。域名 DNS 仍使用 system，不随分组切换。
+
+远程规则下载地址和本地缓存路径已同步更名。需先将 `Rules/oracle.list` 发布到远程仓库，再在客户端重载配置、更新规则集并关闭旧连接，新请求才使用新分组。
 
 | 分类 | 业务连接 | Stash DNS 上游及出口 |
 | --- | --- | --- |
-| vmutex 中的域名、私有域名、Apple、Microsoft、Bilibili、国内域名 | DIRECT | system |
+| oracle 列表中的 IP 与域名 | Oracle（DIRECT / PROXY） | 域名使用 system；IP 条目不参与 DNS 匹配 |
+| 私有域名、Apple、Microsoft、Bilibili、国内域名 | DIRECT | system |
 | Binance，包括原有 binance 关键词兜底 | Binance | Cloudflare `cloudflare-dns.com` → Binance |
 | Bybit | Bybit | Google `dns.google` → Bybit |
 | 境外 AI | AI | Cloudflare `1.0.0.1` + Google `8.8.4.4` → AI |

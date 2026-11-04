@@ -1,6 +1,7 @@
 ---
-# 独立的 Stash 完整配置模板，包含现有 DNS / 分流和两个远程节点订阅。
-# 此文件是模板：先替换下方两个 .invalid 占位 URL，再作为单个配置导入 Stash。
+# 独立的 Stash 完整配置，包含现有 DNS / 分流及两个订阅的填写示例。
+# 下方两个订阅示例暂时注释，因此本文件可先导入；填入链接后再启用示例。
+# 未启用订阅时 PROXY 组仅有 REJECT，请先填写链接再启动代理。
 # 导入此完整配置时，无需同时启用 VMUTEX.stoverride，以免同一套规则重复生效。
 mode: rule # 按下方 rules 顺序匹配连接。
 log-level: info # 记录常规运行信息，便于查看分流结果。
@@ -24,21 +25,21 @@ dns:
     'geosite:private': # V2Fly private 域名集，如 .local、.lan、home.arpa。
       - system # 私有名称交给当前网络的系统 DNS，不送到公共 DoH。
 
-# 此配置中的两个远程代理集需要返回带 proxies: 字段的 Stash / Clash YAML。
-# 将占位 URL 换为自己的订阅链接后再导入 Stash；请勿公开含 token 的实际链接。
-proxy-providers:
-  SubscriptionA: # 第一个订阅的节点集合。
-    url: 'https://replace-me.invalid/subscription-a.yaml' # 替换为第一个订阅链接。
-    path: ./providers/SubscriptionA.yaml # Stash 保存第一个订阅缓存的位置。
-    interval: 86400 # 每 24 小时检查一次订阅更新。
-  SubscriptionB: # 第二个订阅的节点集合。
-    url: 'https://replace-me.invalid/subscription-b.yaml' # 替换为第二个订阅链接。
-    path: ./providers/SubscriptionB.yaml # Stash 保存第二个订阅缓存的位置。
-    interval: 86400 # 每 24 小时检查一次订阅更新。
+# 以下是两个远程代理集的填写示例；先替换 URL，再去掉各行开头的 #。
+# 两个链接都需返回含 proxies: 字段的 Stash / Clash YAML；含 token 的链接只保存在本地。
+# proxy-providers:
+#   SubscriptionA: # 第一个订阅的节点集合。
+#     url: 'https://填入第一个订阅链接' # 第一个订阅链接。
+#     path: ./providers/SubscriptionA.yaml # 第一个订阅的本地缓存。
+#     interval: 86400 # 每 24 小时检查一次更新。
+#   SubscriptionB: # 第二个订阅的节点集合。
+#     url: 'https://填入第二个订阅链接' # 第二个订阅链接。
+#     path: ./providers/SubscriptionB.yaml # 第二个订阅的本地缓存。
+#     interval: 86400 # 每 24 小时检查一次更新。
 
 # 六个业务策略组沿用现有覆写。
 # Stash 空策略组会按 DIRECT 处理；显式保留 REJECT，确保组始终非空。
-# REJECT 也可手动选择；include-all 纳入下方两个远程代理集中的节点。
+# 填好并启用上方两个远程代理集后，include-all 会纳入其节点。
 proxy-groups:
   - name: PROXY # 境外流量的总代理组，也是其他业务组可选择的上游。
     type: select # 由用户手动选择组内出口。

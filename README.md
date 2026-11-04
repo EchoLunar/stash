@@ -4,7 +4,7 @@
 
 ## 分流策略
 
-三个客户端的核心出口均为总出口、`Oracle`、`AI`、`YouTube`、`Telegram`、`Crypto`。Stash 与 Mihomo 的总出口叫 `PROXY`，Loon 使用 `Proxy`，避免与 Loon 内置的 `PROXY` 策略名冲突。`Oracle` 默认直连，也可跟随总出口；`Crypto` 可选直连、代理或单独节点。请导入自己的节点后主动检查各组选择；没有选中可用节点时，`REJECT` 用于避免意外直连。
+三个客户端的核心出口均为总出口、`Oracle`、`AI`、`Crypto`。Stash 与 Mihomo 的总出口叫 `PROXY`，Loon 使用 `Proxy`，避免与 Loon 内置的 `PROXY` 策略名冲突。YouTube 和 Telegram 不再单设策略组，相关域名与 IP 规则直接跟随总出口。`Oracle` 默认直连，也可跟随总出口；`Crypto` 可选直连、代理或单独节点。请导入自己的节点后主动检查各组选择；没有选中可用节点时，`REJECT` 用于避免意外直连。
 
 Stash 与 Mihomo 使用相同顺序的主要业务规则，并共用 `Crypto`、`BiliIntl`、`NetflixIP`、`TelegramIP` 等远程列表。Oracle 的自有 IP 与域名由 `Rules/oracle.list` 管理。Loon 不直接读取 Stash 的 GeoSite 数据，因此使用 Loon 格式的远程列表近似对应；来源和命中范围可能不同，不能保证逐域名完全一致。
 

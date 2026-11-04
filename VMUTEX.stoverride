@@ -50,20 +50,6 @@ proxy-groups: #!replace
     proxies: # 额外列出的固定选项。
       - REJECT # 显式拒绝，避免空组选成直连。
       - PROXY # 跟随总代理组。
-  - name: YouTube # YouTube 服务的手选组。
-    type: select # 手动选择出口。
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png # YouTube 品牌图标便于快速识别视频分组。
-    include-all: true # 允许直接挑选订阅节点或代理集。
-    proxies: # 额外列出的固定选项。
-      - REJECT # 显式拒绝，避免空组选成直连。
-      - PROXY # 跟随总代理组。
-  - name: Telegram # Telegram 服务的手选组。
-    type: select # 手动选择出口。
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png # Telegram 品牌图标便于快速识别通信分组。
-    include-all: true # 允许直接挑选订阅节点或代理集。
-    proxies: # 额外列出的固定选项。
-      - REJECT # 显式拒绝，避免空组选成直连。
-      - PROXY # 跟随总代理组。
   - name: Crypto # 加密货币服务合集的手选组，与 Mihomo 同名。
     type: select # 手动选择出口。
     icon: https://raw.githubusercontent.com/Hawaiine/Oasisic-Icons/main/icons/Crypto/Cryptocurrency/Cryptocurrency.png # 加密货币图标表示交易所、钱包等整个分类。
@@ -82,11 +68,11 @@ rules: #!replace
   - GEOIP,LAN,DIRECT,no-resolve # 已知局域网目标 IP 直连，不为此规则解析域名。
   - GEOSITE,private,DIRECT # V2Fly private 域名集直连；仅匹配名称，不匹配私有 IP。
   - GEOSITE,category-ai-!cn,AI # 境外 AI 域名走 AI 组。
-  - GEOSITE,youtube,YouTube # YouTube 域名走 YouTube 组。
+  - GEOSITE,youtube,PROXY # YouTube 域名直接跟随总代理组。
   - GEOSITE,netflix,PROXY # Netflix 域名走总代理组。
   - RULE-SET,NetflixIP,PROXY,no-resolve # Netflix IP 列表走总代理组，不触发域名解析。
-  - GEOSITE,telegram,Telegram # Telegram 域名走 Telegram 组。
-  - RULE-SET,TelegramIP,Telegram,no-resolve # Telegram IP 列表走 Telegram 组，不触发域名解析。
+  - GEOSITE,telegram,PROXY # Telegram 域名直接跟随总代理组。
+  - RULE-SET,TelegramIP,PROXY,no-resolve # Telegram IP 列表直接跟随总代理组，不触发域名解析。
   - GEOSITE,disney,PROXY # Disney 域名走总代理组。
   - GEOSITE,hbo,PROXY # HBO 域名走总代理组。
   - GEOSITE,spotify,PROXY # Spotify 域名走总代理组。

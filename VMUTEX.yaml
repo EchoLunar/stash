@@ -20,18 +20,6 @@ proxy-groups:
       - REJECT
       - PROXY
     include-all: true
-  - name: YouTube
-    type: select
-    proxies:
-      - REJECT
-      - PROXY
-    include-all: true
-  - name: Telegram
-    type: select
-    proxies:
-      - REJECT
-      - PROXY
-    include-all: true
   - name: Crypto
     type: select
     proxies:
@@ -47,11 +35,11 @@ rules:
   - GEOIP,private,DIRECT,no-resolve
   - GEOSITE,private,DIRECT
   - GEOSITE,category-ai-!cn,AI
-  - GEOSITE,youtube,YouTube
+  - GEOSITE,youtube,PROXY
   - GEOSITE,netflix,PROXY
   - RULE-SET,NetflixIP,PROXY,no-resolve
-  - GEOSITE,telegram,Telegram
-  - RULE-SET,TelegramIP,Telegram,no-resolve
+  - GEOSITE,telegram,PROXY
+  - RULE-SET,TelegramIP,PROXY,no-resolve
   - GEOSITE,disney,PROXY
   - GEOSITE,hbo,PROXY
   - GEOSITE,spotify,PROXY

@@ -1,6 +1,7 @@
 ---
-name: VMUTEX 分流与 DNS # 覆写在 Stash 中显示的名称。
-desc: 六个手选分组及简化 DNS，Oracle 可选直连或 PROXY；需要 Stash iOS/tvOS 3.6+ 或 macOS 4.3+。 # 覆写说明与最低版本。
+name: 自用覆写
+desc: 基于当前 Stash 规则的覆写配置，不包含节点或订阅凭据。
+icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
 
 # 作为现有节点订阅的覆写使用。启用前先为代理业务组选择节点；Oracle 默认直连。
 # 规则 / DNS / 分组整体替换，节点和节点订阅由基础配置提供。

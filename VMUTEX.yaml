@@ -3,11 +3,12 @@ mode: rule
 
 proxy-groups:
   # Oracle 仅提供 DIRECT / PROXY；其余业务组可跟随 PROXY 或单独选择节点。
-  # Crypto 额外提供 DIRECT；需要订阅节点的组为空时拒绝连接，避免回退到直连。
+  # Crypto 额外提供 DIRECT；REJECT 保证未加载订阅节点时代理组仍有明确的拒绝出口。
   - name: PROXY
     type: select
     include-all: true
-    empty-fallback: REJECT
+    proxies:
+      - REJECT
   - name: Oracle
     type: select
     proxies:
@@ -16,28 +17,28 @@ proxy-groups:
   - name: AI
     type: select
     proxies:
+      - REJECT
       - PROXY
     include-all: true
-    empty-fallback: REJECT
   - name: YouTube
     type: select
     proxies:
+      - REJECT
       - PROXY
     include-all: true
-    empty-fallback: REJECT
   - name: Telegram
     type: select
     proxies:
+      - REJECT
       - PROXY
     include-all: true
-    empty-fallback: REJECT
   - name: Crypto
     type: select
     proxies:
       - DIRECT
       - PROXY
+      - REJECT
     include-all: true
-    empty-fallback: REJECT
 rules:
   # Oracle 分类优先于下方分类；在远程列表中维护 IP 和域名，出口由分组选择。
   - RULE-SET,oracle,Oracle
@@ -48,9 +49,9 @@ rules:
   - GEOSITE,category-ai-!cn,AI
   - GEOSITE,youtube,YouTube
   - GEOSITE,netflix,PROXY
-  - GEOIP,netflix,PROXY,no-resolve
+  - RULE-SET,NetflixIP,PROXY,no-resolve
   - GEOSITE,telegram,Telegram
-  - GEOIP,telegram,Telegram,no-resolve
+  - RULE-SET,TelegramIP,Telegram,no-resolve
   - GEOSITE,disney,PROXY
   - GEOSITE,hbo,PROXY
   - GEOSITE,spotify,PROXY
@@ -58,7 +59,7 @@ rules:
   - GEOSITE,twitch,PROXY
   - GEOSITE,primevideo,PROXY
   - GEOSITE,bahamut,PROXY
-  - GEOSITE,biliintl,PROXY
+  - RULE-SET,BiliIntl,PROXY
   - GEOSITE,dazn,PROXY
   - GEOSITE,hulu,PROXY
   - GEOSITE,abema,PROXY
@@ -99,98 +100,49 @@ rule-providers:
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list
     path: ./ruleset/Crypto.list
     interval: 86400
+  BiliIntl:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.list
+    path: ./ruleset/BiliIntl.list
+    interval: 86400
+  NetflixIP:
+    type: http
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/netflix.list
+    path: ./ruleset/NetflixIP.list
+    interval: 86400
+  TelegramIP:
+    type: http
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/telegram.list
+    path: ./ruleset/TelegramIP.list
+    interval: 86400
 dns:
-  # 启用内置 DNS 服务。
+  # 与 Stash 覆写一致：连接规则按域名匹配，普通域名先返回 Fake IP。
   enable: true
-
-  # 普通域名先返回 Fake IP，保留域名供连接规则匹配，避免代理域名提前本地解析。
-  # 私有名称仍返回真实 IP，以便局域网服务与本机名称正常工作。
   enhanced-mode: fake-ip
   fake-ip-filter:
-    - 'geosite:private'
-
-  # 公共 DoH 已通过 #策略组 明确指定出口，无需再按 DNS 服务器 IP 匹配 rules。
-  # system 使用系统 DNS。
+    - 'geosite:private' # 局域网及本地名称使用真实 IP。
+    - 'captive.apple.com' # Apple 网络连通性检测使用真实 IP。
+    - '+.msftconnecttest.com' # Windows 网络连通性检测使用真实 IP。
+    - '+.msftncsi.com' # Windows NCSI 检测使用真实 IP。
+  # 对应 Stash 的 follow-rule: false；DNS 上游不按目标业务组转发。
   respect-rules: false
-
-  # 未命中 policy 时，对应业务规则末尾的 MATCH,PROXY。
-  # Cloudflare + Google DoH 均经 PROXY 查询；两个上游并发查询，并非主备顺序。
-  # 使用 IP 端点，避免启动时还要解析 DoH 服务器域名。
-  nameserver:
-    - 'https://1.1.1.1/dns-query#PROXY'
-    - 'https://8.8.8.8/dns-query#PROXY'
-
-  # DIRECT 出口需要真实 IP 时使用本地系统 DNS，以获得贴近直连出口的 CDN 结果。
-  # 仅持有目标 IP 的连接不会因此反查域名。
-  direct-nameserver:
-    - system
-  # DIRECT 不沿用代理分类的 DoH policy；Crypto 选 DIRECT 时也由本地系统 DNS 解析。
-  direct-nameserver-follow-policy: false
-
-  # 集合型 policy 按与 rules 相同的域名分类顺序匹配，首个命中生效，优先于 nameserver。
-  # 将来如添加精确/通配域名 policy，须注意其优先级高于集合，不能仅按配置顺序判断。
-  # 代理分类显式列在 cn 之前，避免重叠域名被国内 DNS policy 提前截获。
-  # AI、YouTube、Telegram、Crypto 的 DoH 跟随各组节点，其余代理分类跟随 PROXY。
-  nameserver-policy:
-    # Oracle 规则集中仅域名条目参与 DNS 匹配，IP 网段不参与。
-    # 与业务规则共用远程 oracle 列表；DNS 保持 system，不随 Oracle 分组切换。
-    'rule-set:oracle':
-      - system
-    # 与业务连接共用 Crypto 合集，DNS 查询跟随 Crypto 分组所选节点或 DIRECT。
-    'rule-set:Crypto':
-      - 'https://1.1.1.1/dns-query#Crypto'
-      - 'https://8.8.8.8/dns-query#Crypto'
-    # 私有 / 局域网域名。
-    'geosite:private':
-      - system
-
-    # AI 优先于 Microsoft 等较宽泛的分类，重叠域名也经 AI 组解析和连接。
-    'geosite:category-ai-!cn':
-      - 'https://1.1.1.1/dns-query#AI'
-      - 'https://8.8.8.8/dns-query#AI'
-    'geosite:youtube':
-      - 'https://1.1.1.1/dns-query#YouTube'
-      - 'https://8.8.8.8/dns-query#YouTube'
-    'geosite:netflix':
-      - 'https://1.1.1.1/dns-query#PROXY'
-      - 'https://8.8.8.8/dns-query#PROXY'
-    'geosite:telegram':
-      - 'https://1.1.1.1/dns-query#Telegram'
-      - 'https://8.8.8.8/dns-query#Telegram'
-
-    # 原 Streaming、Gaming、GitHub 分类统一使用 PROXY。
-    'geosite:disney,hbo,spotify,tiktok,twitch,primevideo,bahamut':
-      - 'https://1.1.1.1/dns-query#PROXY'
-      - 'https://8.8.8.8/dns-query#PROXY'
-    'geosite:biliintl':
-      - 'https://1.1.1.1/dns-query#PROXY'
-      - 'https://8.8.8.8/dns-query#PROXY'
-    'geosite:dazn,hulu,abema,bbc,dmm,niconico,viu,soundcloud,discoveryplus':
-      - 'https://1.1.1.1/dns-query#PROXY'
-      - 'https://8.8.8.8/dns-query#PROXY'
-    'geosite:epicgames,origin,sony,nintendo,steam,github':
-      - 'https://1.1.1.1/dns-query#PROXY'
-      - 'https://8.8.8.8/dns-query#PROXY'
-
-    # 未被上方分类先命中的 Apple、Microsoft、Bilibili 域名固定直连并使用系统 DNS。
-    'geosite:apple,microsoft,bilibili':
-      - system
-
-    # 原 Google FCM 分类及其他境外域名使用 PROXY。
-    'geosite:googlefcm,geolocation-!cn':
-      - 'https://1.1.1.1/dns-query#PROXY'
-      - 'https://8.8.8.8/dns-query#PROXY'
-
-    # 国内域名兜底；更早命中的代理分类不会落到这里。
-    'geosite:cn':
-      - system
-
-  # DNS 服务器使用域名时的启动解析；上面的 IP 形式 DoH 无需解析服务器域名。
+  # DoH 域名启动解析仍使用当前网络的系统 DNS。
   default-nameserver:
     - system
-
-  # 仅解析代理节点自身的域名，独立于目标网站的 DNS 分流。
-  # 使用直连国内 DoH，避免节点域名明文交给系统 DNS，且不依赖待建立的代理。
+  # 节点服务器域名独立解析，避免连接代理时形成 DNS 循环。
   proxy-server-nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
+  # 需要真实 IP 的公网域名只使用一处国内 DoH，减少不同解析器选点变化。
+  nameserver:
+    - https://dns.alidns.com/dns-query
+  # 私有名称只交给当前网络的系统 DNS，不送到公共 DoH。
+  nameserver-policy:
+    'geosite:private':
+      - system

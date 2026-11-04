@@ -1,0 +1,4 @@
+# 私有 Stash 覆写中可能包含带 token 的订阅 URL，不纳入版本控制。
+/VMUTEX-subscriptions.local.stoverride
+# 本机保存的两条私人订阅及节点凭据；只在本地使用。
+/VMUTEX-Local.yaml

@@ -29,7 +29,7 @@ Mihomo 改用 `enhanced-mode: fake-ip`，只让 `geosite:private` 返回真实 I
 
 ## Stash DNS 设计
 
-Stash 默认使用 Fake IP，让应用的域名查询先得到虚拟地址，连接建立时再按域名规则决定出口和是否需要真实解析。`fake-ip-filter` 只包含 `geosite:private`，私有域名由系统 DNS 返回真实 IP。若某个应用确实不能使用 Fake IP，再为确认过的具体域名增加例外，不对所有域名禁用 Fake IP。
+Stash 默认使用 Fake IP，让应用的域名查询先得到虚拟地址，连接建立时再按域名规则决定出口和是否需要真实解析。`fake-ip-filter` 包含 `geosite:private` 及 Apple、Windows 的少量网络连通性检测域名。私有域名由系统 DNS 返回真实 IP；新增的公网检测域名由阿里 DoH 返回真实 IP，因此这些域名会被本地解析器看到。QQ 与微信的部分本地登录域名已在 `geosite:private` 中，无需重复列出。若某个应用确实不能使用 Fake IP，再为确认过的具体域名增加例外，不对所有域名禁用 Fake IP。
 
 `geosite:private` 是 [V2Fly 的 private 域名清单](https://github.com/v2fly/domain-list-community/blob/master/data/private)，不是私有 IP 网段。当前清单包括 `.lan`、`.localdomain`、`.local`、`home.arpa`、`.internal`、`.localhost`、`.test`、`.example`、`.invalid`，无点主机名、私有地址的反向解析区，以及部分路由器、本地服务和 Tailscale 名称（如 `router.asus.com`、`plex.direct`、`ts.net`）。这些是例子，不是完整且永久不变的清单；未列出的自定义内网域名不会因为解析结果是私有 IP 就自动命中。Stash 的 `GEOSITE` 数据由 V2Fly 社区维护，首次使用时需从 GitHub 加载，见 [Stash 规则文档](https://stash.wiki/rules/rule-types#geosite)。连接目标的私有 IP 则由独立的 `GEOIP,LAN` 规则处理。
 

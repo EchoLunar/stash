@@ -10,8 +10,11 @@ log-level: info # 记录常规运行信息，便于查看分流结果。
 # #!replace 是 Stash 覆写指令：整块替换基础配置中的 DNS，避免混入旧上游。
 dns: #!replace
   follow-rule: false # 内置 DNS 直连；避免 DNS 经代理导致直连网站的 CDN 选址偏移。
-  fake-ip-filter: # 列出需要真实 IP、不能返回 Fake IP 的域名。
-    - 'geosite:private' # 仅豁免私有名称；并非“所有私有 IP”，详见 README。
+  fake-ip-filter: # 仅对本地名称和系统网络检测域名返回真实 IP。
+    - 'geosite:private' # 私有名称及部分本地登录域名使用真实 IP；详见 README。
+    - 'captive.apple.com' # Apple 网络连通性及门户检测使用真实 IP。
+    - '+.msftconnecttest.com' # Windows 网络连通性检测主域及子域使用真实 IP。
+    - '+.msftncsi.com' # Windows NCSI 网络状态检测主域及子域使用真实 IP。
   default-nameserver: # 解析下面 DoH 服务器域名时的启动 DNS。
     - system # 使用当前系统网络提供的 DNS，避免 DoH 域名依赖自身解析。
   proxy-server-nameserver: # 独立解析代理节点的服务器域名，不走代理规则。

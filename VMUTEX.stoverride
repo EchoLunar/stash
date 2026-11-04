@@ -9,7 +9,7 @@ log-level: info # 记录常规运行信息，便于查看分流结果。
 
 # #!replace 是 Stash 覆写指令：整块替换基础配置中的 DNS，避免混入旧上游。
 dns: #!replace
-  follow-rule: false # DNS 上游直连，不让 DNS 请求再进入业务分流规则。
+  follow-rule: true # DoH 请求按下方专用规则出站；代理域名不直连本地解析器。
   fake-ip-filter: # 列出需要真实 IP、不能返回 Fake IP 的域名。
     - 'geosite:private' # 仅豁免私有名称；并非“所有私有 IP”，详见 README。
   default-nameserver: # 解析下面 DoH 服务器域名时的启动 DNS。
@@ -17,12 +17,39 @@ dns: #!replace
   proxy-server-nameserver: # 独立解析代理节点的服务器域名，不走代理规则。
     - https://dns.alidns.com/dns-query # 阿里 DoH；节点域名解析候选上游之一。
     - https://doh.pub/dns-query # DNSPod DoH；与上一条并发，取先成功的结果。
-  nameserver: # 需要真实解析的一般域名使用的上游。
-    - https://dns.alidns.com/dns-query # 阿里 DoH；一般域名解析候选上游之一。
-    - https://doh.pub/dns-query # DNSPod DoH；与上一条并发，取先成功的结果。
-  nameserver-policy: # 指定少数域名使用与默认不同的解析器。
+  nameserver: # 未命中下方 policy 的真实查询经 PROXY 访问 Cloudflare DoH。
+    - https://1.1.1.1/dns-query # 使用 IP 端点，避免解析器自身的域名启动查询。
+  nameserver-policy: # 集合 policy 按书写顺序首个命中；顺序对应业务规则。
+    'rule-set:oracle': # Oracle 列表中只有域名条目参与 DNS policy。
+      - https://dns.google/dns-query # 由 Oracle 组选择 DNS 出口，切换 PROXY 时不走本地 DNS。
+    'rule-set:Crypto': # 加密货币合集的域名。
+      - https://cloudflare-dns.com/dns-query # DoH 跟随 Crypto 所选出口。
     'geosite:private': # V2Fly private 域名集，如 .local、.lan、home.arpa。
       - system # 私有名称交给当前网络的系统 DNS，不送到公共 DoH。
+    'geosite:category-ai-!cn': # 境外 AI 域名优先于后面的国内分类。
+      - https://1.0.0.1/dns-query # DoH 跟随 AI 所选出口。
+    'geosite:youtube': # YouTube 域名。
+      - https://dns10.quad9.net/dns-query # DoH 跟随 YouTube 所选出口。
+    'geosite:netflix': # Netflix 域名可能与宽泛地区分类重叠。
+      - https://1.1.1.1/dns-query # DoH 经 PROXY 出口。
+    'geosite:telegram': # Telegram 域名。
+      - https://unfiltered.adguard-dns.com/dns-query # DoH 跟随 Telegram 所选出口。
+    'geosite:disney,hbo,spotify,tiktok,twitch,primevideo,bahamut': # 第一组流媒体域名。
+      - https://1.1.1.1/dns-query # DoH 经 PROXY 出口。
+    'rule-set:BiliIntl': # Bilibili 国际站域名优先于 Bilibili 直连分类。
+      - https://1.1.1.1/dns-query # DoH 经 PROXY 出口。
+    'geosite:dazn,hulu,abema,bbc,dmm,niconico,viu,soundcloud,discoveryplus': # 第二组流媒体域名。
+      - https://1.1.1.1/dns-query # DoH 经 PROXY 出口。
+    'geosite:epicgames,origin,sony,nintendo,steam,github': # 游戏和 GitHub 域名。
+      - https://1.1.1.1/dns-query # DoH 经 PROXY 出口。
+    'geosite:apple,microsoft,bilibili': # 未被前面代理分类命中的固定直连域名。
+      - https://dns.alidns.com/dns-query # 本地阿里 DoH；直连服务尽量取得本地 CDN 地址。
+      - https://doh.pub/dns-query # 本地 DNSPod DoH；与上一条并发。
+    'geosite:googlefcm,geolocation-!cn': # Google FCM 与其他境外域名。
+      - https://1.1.1.1/dns-query # DoH 经 PROXY 出口。
+    'geosite:cn': # 未被前面代理分类命中的中国大陆域名。
+      - https://dns.alidns.com/dns-query # 本地阿里 DoH。
+      - https://doh.pub/dns-query # 本地 DNSPod DoH；与上一条并发。
 
 # #!replace 整块替换基础配置中的策略组；不替换节点本身。
 # Stash 空策略组会按 DIRECT 处理；显式保留 REJECT，确保组始终非空。
@@ -64,9 +91,19 @@ proxy-groups: #!replace
       - PROXY # 跟随总代理组。
       - REJECT # 显式拒绝，避免空组选成直连。
 
-# 从上到下匹配，第一条命中的规则决定业务连接出口；#!replace 整块替换基础规则。
-# 以下业务规则与 VMUTEX.yaml 对齐；Mihomo 的 private 标签转为 Stash 的 LAN。
+# 从上到下匹配，第一条命中的规则决定连接出口；#!replace 整块替换基础规则。
+# 前八条给 DNS 上游指定出口，也会匹配应用直接访问相同地址的连接。
+# 其余业务规则与 VMUTEX.yaml 对齐。
+# Mihomo 的 private 标签转为 Stash 的 LAN。
 rules: #!replace
+  - DOMAIN,dns.google,Oracle # Oracle 专用 DoH 跟随 Oracle 组；命名端点优先于通用规则。
+  - DOMAIN,cloudflare-dns.com,Crypto # Crypto 专用 DoH 跟随 Crypto 组。
+  - IP-CIDR,1.0.0.1/32,AI,no-resolve # AI 专用 DoH IP 跟随 AI 组，不解析端点。
+  - DOMAIN,dns10.quad9.net,YouTube # YouTube 专用 DoH 跟随 YouTube 组。
+  - DOMAIN,unfiltered.adguard-dns.com,Telegram # Telegram 专用 DoH 跟随 Telegram 组。
+  - DOMAIN,dns.alidns.com,DIRECT # 国内 DoH 固定本地直连，保持本地 CDN 选址。
+  - DOMAIN,doh.pub,DIRECT # 第二个国内 DoH 固定本地直连。
+  - IP-CIDR,1.1.1.1/32,PROXY,no-resolve # 通用境外 DoH IP 经 PROXY，不解析端点。
   - RULE-SET,oracle,Oracle # 自有 VPS IP 和 Oracle / 自有域名走 Oracle 组。
   - RULE-SET,Crypto,Crypto # 与 Mihomo 共用加密货币合集，涵盖交易所、钱包等域名。
   - GEOIP,LAN,DIRECT,no-resolve # 已知局域网目标 IP 直连，不为此规则解析域名。

@@ -33,16 +33,16 @@ Stash 默认使用 Fake IP，让应用的域名查询先得到虚拟地址，连
 
 `geosite:private` 是 [V2Fly 的 private 域名清单](https://github.com/v2fly/domain-list-community/blob/master/data/private)，不是私有 IP 网段。当前清单包括 `.lan`、`.localdomain`、`.local`、`home.arpa`、`.internal`、`.localhost`、`.test`、`.example`、`.invalid`，无点主机名、私有地址的反向解析区，以及部分路由器、本地服务和 Tailscale 名称（如 `router.asus.com`、`plex.direct`、`ts.net`）。这些是例子，不是完整且永久不变的清单；未列出的自定义内网域名不会因为解析结果是私有 IP 就自动命中。Stash 的 `GEOSITE` 数据由 V2Fly 社区维护，首次使用时需从 GitHub 加载，见 [Stash 规则文档](https://stash.wiki/rules/rule-types#geosite)。连接目标的私有 IP 则由独立的 `GEOIP,LAN` 规则处理。
 
-Stash 开启 `follow-rule: true`。固定直连的 Apple、Microsoft、Bilibili、中国大陆域名使用直连的阿里 DNS / DNSPod DoH；两个国内上游并发查询，取先成功的结果。Oracle、Crypto、AI、YouTube、Telegram 的域名使用各自专用的公共 DoH 地址，并由规则表开头的八条 DNS 出口规则送往对应策略组。其余需要真实解析的域名使用 Cloudflare DoH，经 `PROXY` 出站。域名 policy 按业务规则顺序排列，代理分类优先于宽泛的中国大陆分类；IP 列表无法参与初次域名查询的 policy 匹配。
+Stash 使用 `follow-rule: false`。需要真实 IP 的公网域名统一由直连的阿里 DoH 解析；只保留一个上游，避免两个解析器并发返回不同 CDN 地址。连接规则仍按业务域名选择代理节点，DNS 不按业务组转发。默认 Fake IP 让普通代理请求先保留域名，减少发往本地解析器的查询；这不是“代理域名绝不经本地 DNS”的保证，例如要求真实 IP 的应用请求仍可能使用上述直连 DoH。
 
-`default-nameserver: system` 只用于 DoH 服务域名的启动解析；`proxy-server-nameserver` 使用独立、直连的国内 DoH 解析节点域名，避免建立代理时递归依赖自身。私有域名的 `nameserver-policy` 使用 `system`。末尾的 `GEOIP,CN,DIRECT,no-resolve` 与 Mihomo 保持一致：仅在已有目标 IP 时判断中国大陆归属，不会为了这条规则查询未命中的域名。
+`default-nameserver: system` 用于阿里 / DNSPod DoH 服务域名的启动解析；`proxy-server-nameserver` 使用独立、直连的阿里 / DNSPod DoH 解析节点域名，避免建立代理时递归依赖自身。私有域名的 `nameserver-policy` 使用 `system`。末尾的 `GEOIP,CN,DIRECT,no-resolve` 与 Mihomo 保持一致：仅在已有目标 IP 时判断中国大陆归属，不会为了这条规则查询未命中的域名。
 
-两版都依靠前面的域名分类决定直连或代理：固定直连域名在需要真实 IP 时从本地出口解析，有助于保持本地 CDN 选址；普通代理域名先用 Fake IP 保留名称，需要真实解析时再使用对应代理出口的 DoH。仍以域名进入分流、且未命中域名规则的连接会落到 `PROXY`，不再因末尾 GEOIP 规则提前触发本地查询；这可能让少数未收录的国内网站走代理。若应用已自行解析出真实 IP，`GEOIP,CN` 仍可据此选择直连。DoH 服务域名的启动解析、代理节点域名和私有域名仍有独立的直连解析路径；Oracle / Crypto 选择 `DIRECT` 时，专用公共 DoH 也会直连，CDN 选址未必与本地 DNS 相同。浏览器或应用自带的 DNS 可能绕开这里的设置，因此不能宣称绝对零泄漏或零 CDN 漂移。
+两版都依靠前面的域名分类决定直连或代理，但 DNS 实现不同。Stash 的固定直连域名在需要真实 IP 时从本地出口解析，有助于保持本地 CDN 选址；普通代理域名先用 Fake IP 保留名称。仍以域名进入分流、且未命中域名规则的连接会落到 `PROXY`，不再因末尾 GEOIP 规则提前触发本地查询；这可能让少数未收录的国内网站走代理。若应用已自行解析出真实 IP，`GEOIP,CN` 仍可据此选择直连。DoH 服务域名的启动解析、代理节点域名和私有域名仍有独立的直连解析路径；浏览器或应用自带的 DNS 可能绕开这里的设置，因此不能宣称绝对零泄漏或零 CDN 漂移。
 
 ## 连接规则与检查
 
 Oracle 分类优先，业务专用分类排在境外、国内和最终兜底分类之前。`Rules/oracle.list` 包含四条 VPS IPv4 / IPv6 和 `oracle.com`、`oraclecloud.com`、`5202323.xyz` 的域名条目。`Oracle` 手选分组只含 `DIRECT` 与 `PROXY`，默认首项为 `DIRECT`；客户端已有保存选择时以客户端为准。切换会同时影响列表内 IP 和域名的所有端口，包括使用 IP 连接的 SSH。需先将 `Rules/oracle.list` 发布到远程仓库，再在客户端更新规则集。
 
-除 Stash 开头八条用于指定 DNS 上游出口的规则外，两版业务连接规则按相同的分类和顺序排列。这八条也会影响应用直接访问相同 DNS 服务地址的连接。Stash 的 `Crypto` 与 Mihomo 共用同一份 [MetaCubeX 加密货币合集](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list)，不再保留额外的 Binance 关键词兜底；`BiliIntl` 改用 [MetaCubeX 国际站列表](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.list)。Stash 不支持直接使用 Mihomo 的全部 GeoSite / GeoIP 数据：其普通 `GEOSITE` 使用 V2Fly 数据，`GEOIP` 使用自己的数据库；Netflix / Telegram 使用 MetaCubeX 的独立 IP 列表。因此两版业务规则文本和主要远程来源已对齐，但不能保证所有域名和 IP 在两个内核里命中完全相同。DNS 行为仍按各自配置独立维护。
+两版业务连接规则按相同的分类和顺序排列。Stash 的 `Crypto` 与 Mihomo 共用同一份 [MetaCubeX 加密货币合集](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list)，不再保留额外的 Binance 关键词兜底；`BiliIntl` 改用 [MetaCubeX 国际站列表](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.list)。Stash 不支持直接使用 Mihomo 的全部 GeoSite / GeoIP 数据：其普通 `GEOSITE` 使用 V2Fly 数据，`GEOIP` 使用自己的数据库；Netflix / Telegram 使用 MetaCubeX 的独立 IP 列表。因此两版业务规则文本和主要远程来源已对齐，但不能保证所有域名和 IP 在两个内核里命中完全相同。DNS 行为仍按各自配置独立维护。
 
 启用后，在 Stash 中验证私有域名可由系统解析、节点域名能在代理建立前解析、国内域名直连、境外域名及 Crypto / AI 等专用域名按对应分组出站。检查普通域名收到 Fake IP 且实际连接成功；如发现特定应用需要真实 IP，记录域名后再加入 `fake-ip-filter`。还应检查 Stash 的 DNS 诊断和连接日志：静态配置检查不能代替客户端运行验证。远程规则更新可能改变域名归类，节点的 MY/US 名称也不能保证网站采用相同的 IP 地区判定。

@@ -18,54 +18,27 @@
 
 ## Stash 使用
 
-1. 使用 Stash iOS/tvOS 3.6+ 或 macOS 4.3+；这里使用了 `rule-set:` DNS policy、独立节点 DNS 和 inline 规则集。
-2. 在 Stash 中加载自己的节点订阅，再导入并启用 `VMUTEX.stoverride`。
-3. 为 `PROXY` 选择节点；`AI`、`YouTube`、`Telegram`、`Binance`、`Bybit` 可分别选择节点或选择 `PROXY` 跟随总策略。`REJECT` 是显式拒绝选项，用来避免 Stash 空组按直连处理；请在业务组中主动选择所需出口。
-4. 这份覆写整体替换 DNS、策略组、规则和规则提供器。与仓库旧的 `stash.stoverride` 二选一，避免后应用的覆写覆盖本文件。
-5. 重载配置、清理 DNS 缓存并关闭旧连接后，检查新连接的规则和出口。浏览器自带的加密 DNS 会绕开这里按查询域名选择上游的逻辑，应使用系统 DNS。
+1. 使用 Stash iOS/tvOS 3.6+ 或 macOS 4.3+；这里使用了独立节点 DNS 和远程规则集。
+2. 在 Stash 中加载自己的节点订阅，再导入并启用 `VMUTEX.stoverride`。它整体替换 DNS、策略组、规则和规则提供器；不要与仓库旧的 `stash.stoverride` 同时启用。
+3. 为 `PROXY` 选择节点；`AI`、`YouTube`、`Telegram`、`Crypto` 可分别选择节点或跟随 `PROXY`，`Crypto` 还可选择 `DIRECT`。`REJECT` 是显式拒绝选项，用来避免 Stash 空组按直连处理；请主动选择需要的出口。旧的 Binance / Bybit 分组选择不会自动迁移到 `Crypto`。
+4. 重载配置、清理 DNS 缓存并关闭旧连接后，检查新连接的规则与出口。浏览器自带的加密 DNS 会绕开 Stash 的内置 DNS，应让浏览器使用系统 DNS。
 
 官方说明：[覆写合并](https://stash.wiki/configuration/override)、[DNS 配置](https://stash.wiki/features/dns-server)、[规则集合](https://stash.wiki/rules/rule-set)、[策略组](https://stash.wiki/proxy-protocols/proxy-groups)。
 
-## 连接与 DNS 出口
+## Stash DNS 设计
 
-两版均让 Oracle 分类优先，业务专用分类排在境外、国内和最终兜底分类之前。每份配置内部，域名连接规则与 DNS policy 共用自己的规则集和 geosite 分类。Mihomo 使用统一 Crypto 分组；Stash 仍使用 Binance、Bybit 独立分组。下表描述 Stash 版。
+Stash 默认使用 Fake IP，让应用的域名查询先得到虚拟地址，连接建立时再按域名规则决定出口和是否需要真实解析。`fake-ip-filter` 只包含 `geosite:private`，私有域名由系统 DNS 返回真实 IP。若某个应用确实不能使用 Fake IP，再为确认过的具体域名增加例外，不对所有域名禁用 Fake IP。
 
-原 `Rules/vmutex.list` 已重命名为 `Rules/oracle.list`，保留四条 VPS IPv4 / IPv6 和 `oracle.com`、`oraclecloud.com`、`5202323.xyz` 的全部条目。两版均使用 `RULE-SET,oracle,Oracle`，新增的 `Oracle` 手选分组仅含 `DIRECT` 与 `PROXY`：前者直连，后者跟随总代理分组。默认首项为 `DIRECT`，客户端已有保存选择时以客户端为准。切换会同时影响列表内 IP 和域名的所有端口，包括使用 IP 连接的 SSH；不按 SSH / 网页分别分流。域名 DNS 仍使用 system，不随分组切换。
+`geosite:private` 是 [V2Fly 的 private 域名清单](https://github.com/v2fly/domain-list-community/blob/master/data/private)，不是私有 IP 网段。当前清单包括 `.lan`、`.localdomain`、`.local`、`home.arpa`、`.internal`、`.localhost`、`.test`、`.example`、`.invalid`，无点主机名、私有地址的反向解析区，以及部分路由器、本地服务和 Tailscale 名称（如 `router.asus.com`、`plex.direct`、`ts.net`）。这些是例子，不是完整且永久不变的清单；未列出的自定义内网域名不会因为解析结果是私有 IP 就自动命中。Stash 的 `GEOSITE` 数据由 V2Fly 社区维护，首次使用时需从 GitHub 加载，见 [Stash 规则文档](https://stash.wiki/rules/rule-types#geosite)。连接目标的私有 IP 则由独立的 `GEOIP,LAN` 规则处理。
 
-远程规则下载地址和本地缓存路径已同步更名。需先将 `Rules/oracle.list` 发布到远程仓库，再在客户端重载配置、更新规则集并关闭旧连接，新请求才使用新分组。
+一般解析使用阿里 DNS 和 DNSPod 的 DoH。Stash 会并发请求这两个上游并采用先返回的结果，因此它们不是按顺序切换的主备。`follow-rule: false` 使内置 DNS 请求直接发出，不再根据 Crypto、AI 等业务分组选择 DNS 出口。业务连接仍按原有规则分别选节点，DNS 请求的出口不保证与业务节点一致。
 
-| 分类 | 业务连接 | Stash DNS 上游及出口 |
-| --- | --- | --- |
-| oracle 列表中的 IP 与域名 | Oracle（DIRECT / PROXY） | 域名使用 system；IP 条目不参与 DNS 匹配 |
-| 私有域名、Apple、Microsoft、Bilibili、国内域名 | DIRECT | system |
-| Binance，包括原有 binance 关键词兜底 | Binance | Cloudflare `cloudflare-dns.com` → Binance |
-| Bybit | Bybit | Google `dns.google` → Bybit |
-| 境外 AI | AI | Cloudflare `1.0.0.1` + Google `8.8.4.4` → AI |
-| YouTube | YouTube | Quad9 无过滤 `dns10.quad9.net` → YouTube |
-| Telegram | Telegram | AdGuard 无过滤 `unfiltered.adguard-dns.com` → Telegram |
-| 其他境外、Netflix、流媒体、游戏、GitHub、Google FCM、未命中域名 | PROXY | Cloudflare `1.1.1.1` + Google `8.8.8.8` → PROXY |
+`default-nameserver: system` 用于 DoH 服务域名的启动解析；`proxy-server-nameserver` 使用独立的国内 DoH 路径解析节点域名，避免节点建立过程递归依赖代理。私有域名的 `nameserver-policy` 使用 `system`。末尾的 `GEOIP,CN,DIRECT` 与 Mihomo 保持相同判断方式：域名规则未命中时，可能先解析目标域名，再按结果是否位于中国大陆决定直连。
 
-Stash 版开启 `follow-rule`，并在业务规则前为 DNS 上游指定出口。DNS 上游使用不同的地址，才能按各组分别路由；不能把同一个上游地址重复配置后，只靠查询域名让它走不同策略组。这里所有公共上游均使用 DoH。
+## 连接规则与检查
 
-Mihomo 版继续为每组使用 Cloudflare + Google，并用 `#组名` 绑定出口。两版各自保持业务连接与 DNS 的分组对应，交易所分类、公共 DNS 服务商及并发上游数量不同。Quad9 和 AdGuard 选用无过滤服务：[Quad9 地址](https://docs.quad9.net/services/)、[AdGuard 地址](https://adguard-dns.io/en/public-dns.html)。
+Oracle 分类优先，业务专用分类排在境外、国内和最终兜底分类之前。`Rules/oracle.list` 包含四条 VPS IPv4 / IPv6 和 `oracle.com`、`oraclecloud.com`、`5202323.xyz` 的域名条目。`Oracle` 手选分组只含 `DIRECT` 与 `PROXY`，默认首项为 `DIRECT`；客户端已有保存选择时以客户端为准。切换会同时影响列表内 IP 和域名的所有端口，包括使用 IP 连接的 SSH。需先将 `Rules/oracle.list` 发布到远程仓库，再在客户端更新规则集。
 
-Stash 使用 `fake-ip-filter: ["*"]` 返回真实 IP；不照搬 Mihomo 的 `enhanced-mode`、`respect-rules`、`direct-nameserver` 或 `empty-fallback` 字段。DNS 服务域名的启动解析和代理节点域名解析保留 system；节点解析走独立路径。system 的具体服务器由系统网络设置决定。
+两版连接规则按相同的分类和顺序排列。Stash 的 `Crypto` 与 Mihomo 共用同一份 [MetaCubeX 加密货币合集](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list)，不再保留额外的 Binance 关键词兜底；`BiliIntl` 改用 [MetaCubeX 国际站列表](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.list)。Stash 不支持直接使用 Mihomo 的全部 GeoSite / GeoIP 数据：其普通 `GEOSITE` 使用 V2Fly 数据，`GEOIP` 使用自己的数据库；Netflix / Telegram 使用 MetaCubeX 的独立 IP 列表。因此两版规则文本和主要远程来源已对齐，但不能保证所有域名和 IP 在两个内核里命中完全相同。DNS 行为仍按各自配置独立维护。
 
-## 已修正的问题和边界
-
-- Bybit 原先缺少专用 DNS policy，查询会落到 PROXY；现在已补齐。
-- 当前 Mihomo 配置中，Binance、Bybit 及合集内其他服务的连接与 DNS 都使用远程 `Crypto` 规则集，无关键词兜底。Stash 版保留共享 inline `BinanceKeyword` 规则集，让该版本的连接和 DNS 使用同一关键词匹配条件。
-- Stash 版 Netflix、Telegram 的 IP 路由使用远程列表，私有 IP 分类使用 `GEOIP,LAN`；Mihomo 版保留原生 GeoIP 分类。
-- Stash 的 V2Fly 上游没有独立 `biliintl` 分类，Stash 版使用 inline `BiliIntl` 集合列出 `bilibili.tv`、`biliintl.com`、`dreamcast.hk`，优先于 Bilibili 直连规则。Mihomo 的 MetaCubeX 扩展数据包含 `biliintl`，Mihomo 版直接使用该分类。Stash 的这三条域名不代表 MetaCubeX 扩展集合的完整内容。来源：[V2Fly 国际站条目](https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/bilibili)、[MetaCubeX 数据说明](https://github.com/MetaCubeX/meta-rules-dat/blob/master/README.md)。
-- 精确域名、通配域名的 DNS policy 优先级高于集合。当前使用集合型 policy，集合之间的顺序与业务域名规则对应；后续增加 policy 时要同时检查两边优先级。
-- IP-CIDR 和 GEOIP 需要目标 IP，不能据此选择第一次域名查询的 DNS。纯 IP 连接也没有可匹配的查询域名。
-- Mihomo 的直连解析沿用已匹配的域名 DNS policy，未命中 policy 时使用 system。Stash 版没有照搬 `direct-nameserver` 字段。只在最后被 `GEOIP,CN` 判定直连、且此前未命中直连域名分类的连接，初次 DNS 仍可能经 PROXY；Mihomo 再次解析时若命中代理 DNS policy，也仍沿用该 policy。IP 路由与 DNS 出口不保证始终一致。
-- Stash 版的 Binance 关键词兜底会匹配任何包含 binance 的域名，含无关域名；Mihomo 版已移除该关键词规则。远程规则和 geosite 数据更新也可能改变归类，不能凭节点的 MY/US 名称保证网站采用相同的 IP 地区判定。
-
-启用后应在连接记录中分别检查 `www.binance.com → Binance`、`cloudflare-dns.com → Binance`，以及 Bybit、AI、YouTube、Telegram 对应的业务和 DNS 连接。配置文件检查不能代替 Stash 运行日志。
-
-## 本次检查
-
-2026-10-18 初次适配检查：YAML 结构、重复键、规则引用和当时两版的 38 个域名分类 DNS 出口对照通过；14 个规则匹配样例通过，覆盖关键词重叠和 Telegram IPv4/IPv6。随后 Mihomo 配置恢复原生 GeoIP / GEOSITE 分类，按独立配置维护，不再要求两版逐项使用同一提供器。
-
-5 个远程规则源可读取且格式正确，Stash 使用的 33 个 geosite 分类均在当前上游存在；8 个公共 DoH 端点均返回有效 DNS 响应，其中 Quad9 使用 HTTP/2 验证。端点检查通过当前电脑网络完成，未在 Stash 中验证所选节点出口或导入兼容性。
+启用后，在 Stash 中验证私有域名可由系统解析、节点域名能在代理建立前解析、国内域名直连、境外域名及 Crypto / AI 等专用域名按对应分组出站。检查普通域名收到 Fake IP 且实际连接成功；如发现特定应用需要真实 IP，记录域名后再加入 `fake-ip-filter`。还应检查 Stash 的 DNS 诊断和连接日志：静态配置检查不能代替客户端运行验证。远程规则更新可能改变域名归类，节点的 MY/US 名称也不能保证网站采用相同的 IP 地区判定。

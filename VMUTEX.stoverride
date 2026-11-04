@@ -106,7 +106,7 @@ rules: #!replace
   - GEOSITE,googlefcm,PROXY # Google FCM 推送域名走总代理组。
   - GEOSITE,geolocation-!cn,PROXY # 其他非中国大陆地理分类域名走总代理组。
   - GEOSITE,cn,DIRECT # 中国大陆域名集直连。
-  - GEOIP,CN,DIRECT # 与 Mihomo 一样，以目标 IP 的中国大陆归属作最后直连判断；域名可能触发解析。
+  - GEOIP,CN,DIRECT,no-resolve # 只按已有目标 IP 判断中国大陆直连；域名不为此规则提前解析。
   - MATCH,PROXY # 以上规则均未命中时走总代理组。
 
 # #!replace 整块替换基础配置的规则提供器；每个名称由上方 RULE-SET 引用。

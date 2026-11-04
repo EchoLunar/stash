@@ -6,15 +6,17 @@
 
 为 `PROXY` 选择节点；`AI`、`YouTube`、`Telegram`、`Crypto` 可单独选择节点，也可以选择 `PROXY` 跟随总策略。原 Binance、Bybit 分组合并为 `Crypto`，使用 [MetaCubeX 加密货币合集](https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list)，每 24 小时检查更新。合集还涵盖其他交易所、钱包和行情服务，并非仅限 Binance、Bybit。
 
-`Crypto` 同时提供 `DIRECT` 和全部订阅节点。选择 MY 时，业务连接与该分类的 Cloudflare / Google DoH 均走 MY；选择 `DIRECT` 时，两者均直连，DNS 服务商仍为 Cloudflare / Google。没有保存过选择时，`DIRECT` 是组内首项，重载后请确认选择。
+`Crypto` 同时提供 `DIRECT` 和全部订阅节点。选择 MY 时，业务连接走 MY；需要经代理真实解析的该分类查询使用 Cloudflare / Google DoH 并绑定 `Crypto`。选择 `DIRECT` 时，目标域名改由本地系统 DNS 解析，以减少直连访问的 CDN 选址偏差。没有保存过选择时，`DIRECT` 是组内首项，重载后请确认选择。
 
-业务连接使用 `RULE-SET,Crypto,Crypto`，DNS 使用同一 `rule-set:Crypto` 集合，并通过 `#Crypto` 绑定出口。更新配置后需为新建的 `Crypto` 分组选择所需节点（例如 MY），原分组的选择不会自动迁移；清理 DNS 缓存并关闭旧连接后，新请求才按新配置处理。
+业务连接使用 `RULE-SET,Crypto,Crypto`；需要真实解析时，DNS policy 使用同一 `rule-set:Crypto` 集合，并通过 `#Crypto` 绑定代理出口。更新配置后需为新建的 `Crypto` 分组选择所需节点（例如 MY），原分组的选择不会自动迁移；清理 DNS 缓存并关闭旧连接后，新请求才按新配置处理。
 
-`direct-nameserver-follow-policy: true` 使直连连接再次解析域名时也沿用 DNS policy，避免 Crypto 选择 DIRECT 后被系统 DNS 覆盖。它是全局选项：其他直连连接也优先沿用匹配的 policy；未匹配 policy 时使用 `direct-nameserver: [system]`。固定直连域名分类的 policy 本身仍为 system。参考：[Mihomo DNS 配置](https://wiki.metacubex.one/config/dns/#direct-nameserver-follow-policy)。
+Mihomo 改用 `enhanced-mode: fake-ip`，只让 `geosite:private` 返回真实 IP。`direct-nameserver-follow-policy: false` 使直连连接需要真实解析时使用 `direct-nameserver: [system]`，包括 `Crypto` 选 `DIRECT` 的情况；代理连接仍由对应 DNS policy 选择上游。参考：[Mihomo DNS 配置](https://wiki.metacubex.one/config/dns/#direct-nameserver-follow-policy)。
 
 `VMUTEX.yaml` 保留原生 `GEOSITE,telegram`、`GEOIP,telegram`、`GEOSITE,biliintl` 和 `GEOIP,netflix`，并让域名 DNS policy 使用对应 geosite 分类。Telegram 的域名规则与 IP 规则分别覆盖域名连接和直接 IP 连接。
 
 这些扩展分类存在于 MetaCubeX geo 数据中；应使用包含这些分类的完整数据。此前仅因 Stash 兼容而添加的 `TelegramIP`、`NetflixIP`、`BiliIntl` 提供器已从 Mihomo 配置移除。参考：[MetaCubeX 数据说明](https://github.com/MetaCubeX/meta-rules-dat/blob/master/README.md)。
+
+节点域名使用独立的阿里 DNS / DNSPod DoH 直连解析，不依赖代理建立。末尾 `GEOIP,CN,DIRECT,no-resolve` 只匹配已有目标 IP，不会为判断地区而提前解析未命中的域名。
 
 ## Stash 使用
 
@@ -33,7 +35,9 @@ Stash 默认使用 Fake IP，让应用的域名查询先得到虚拟地址，连
 
 一般解析使用阿里 DNS 和 DNSPod 的 DoH。Stash 会并发请求这两个上游并采用先返回的结果，因此它们不是按顺序切换的主备。`follow-rule: false` 使内置 DNS 请求直接发出，不再根据 Crypto、AI 等业务分组选择 DNS 出口。业务连接仍按原有规则分别选节点，DNS 请求的出口不保证与业务节点一致。
 
-`default-nameserver: system` 用于 DoH 服务域名的启动解析；`proxy-server-nameserver` 使用独立的国内 DoH 路径解析节点域名，避免节点建立过程递归依赖代理。私有域名的 `nameserver-policy` 使用 `system`。末尾的 `GEOIP,CN,DIRECT` 与 Mihomo 保持相同判断方式：域名规则未命中时，可能先解析目标域名，再按结果是否位于中国大陆决定直连。
+`default-nameserver: system` 用于 DoH 服务域名的启动解析；`proxy-server-nameserver` 使用独立的国内 DoH 路径解析节点域名，避免节点建立过程递归依赖代理。私有域名的 `nameserver-policy` 使用 `system`。末尾的 `GEOIP,CN,DIRECT,no-resolve` 与 Mihomo 保持一致：仅在已有目标 IP 时判断中国大陆归属，不会为了这条规则查询未命中的域名。
+
+两版都依靠前面的域名分类决定直连或代理：已分类的直连域名在需要真实 IP 时从本地出口解析，有助于保持本地 CDN 选址；普通代理域名先用 Fake IP 保留名称，Mihomo 在需要真实解析时使用对应分组的境外 DoH。仍以域名进入分流、且未命中域名规则的连接会落到 `PROXY`，不再因末尾 GEOIP 规则提前触发本地查询；这可能让少数未收录的国内网站走代理。若应用已自行解析出真实 IP，`GEOIP,CN` 仍可据此选择直连。DoH 服务域名的启动解析、代理节点域名和私有域名仍有独立的直连解析路径；浏览器或应用自带的 DNS 也可能绕开这里的设置，因此不能宣称绝对零泄漏或零 CDN 漂移。
 
 ## 连接规则与检查
 

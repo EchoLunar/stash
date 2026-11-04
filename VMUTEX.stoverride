@@ -33,34 +33,40 @@ dns: #!replace
 proxy-groups: #!replace
   - name: PROXY # 境外流量的总代理组，也是其他业务组可选择的上游。
     type: select # 由用户手动选择组内出口。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Global.png # 地球图标表示全部境外流量的总出口。
     include-all: true # 纳入基础配置中的节点和其他可用代理集。
     proxies: # 额外列出的固定选项。
       - REJECT # 保证组非空；选中时拒绝流量。
   - name: Oracle # 自有 VPS 与 Oracle 域名的手选组。
     type: select # 手动选择直连或跟随 PROXY。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Server.png # 服务器图标表示自有 VPS 与 Oracle 资源。
     proxies: # Oracle 只提供以下两个出口。
       - DIRECT # 从当前设备直接连接。
       - PROXY # 使用 PROXY 当前选定的节点。
   - name: AI # 境外 AI 服务的手选组。
     type: select # 手动选择出口。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Bot.png # 机器人图标表示多种 AI 服务，而非单一品牌。
     include-all: true # 允许直接挑选订阅节点或代理集。
     proxies: # 额外列出的固定选项。
       - REJECT # 显式拒绝，避免空组选成直连。
       - PROXY # 跟随总代理组。
   - name: YouTube # YouTube 服务的手选组。
     type: select # 手动选择出口。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png # YouTube 品牌图标便于快速识别视频分组。
     include-all: true # 允许直接挑选订阅节点或代理集。
     proxies: # 额外列出的固定选项。
       - REJECT # 显式拒绝，避免空组选成直连。
       - PROXY # 跟随总代理组。
   - name: Telegram # Telegram 服务的手选组。
     type: select # 手动选择出口。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png # Telegram 品牌图标便于快速识别通信分组。
     include-all: true # 允许直接挑选订阅节点或代理集。
     proxies: # 额外列出的固定选项。
       - REJECT # 显式拒绝，避免空组选成直连。
       - PROXY # 跟随总代理组。
   - name: Crypto # 加密货币服务合集的手选组，与 Mihomo 同名。
     type: select # 手动选择出口。
+    icon: https://raw.githubusercontent.com/Hawaiine/Oasisic-Icons/main/icons/Crypto/Cryptocurrency/Cryptocurrency.png # 加密货币图标表示交易所、钱包等整个分类。
     include-all: true # 允许直接挑选订阅节点或代理集。
     proxies: # 额外列出的固定选项。
       - DIRECT # 与 Mihomo 一样允许加密货币业务直连；首次加载时位于首项。

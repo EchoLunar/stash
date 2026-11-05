@@ -6,7 +6,7 @@
 
 三个客户端的核心出口均为总出口、`Oracle`、`AI`、`Crypto`。Stash 与 Mihomo 的总出口叫 `PROXY`，Loon 使用 `Proxy`，避免与 Loon 内置的 `PROXY` 策略名冲突。YouTube 和 Telegram 不再单设策略组，相关域名与 IP 规则直接跟随总出口。`Oracle` 默认直连，也可跟随总出口；`Crypto` 可选直连、代理或单独节点。请导入自己的节点后主动检查各组选择；没有选中可用节点时，`REJECT` 用于避免意外直连。
 
-Stash 与 Mihomo 使用相同顺序的主要业务规则，并共用 `Crypto`、`BiliIntl`、`NetflixIP`、`TelegramIP` 等远程列表。Oracle 的自有 IP 与域名由 `Rules/oracle.list` 管理。Loon 不直接读取 Stash 的 GeoSite 数据，因此使用 Loon 格式的远程列表近似对应；来源和命中范围可能不同，不能保证逐域名完全一致。
+Stash 与 Mihomo 使用相同顺序的主要业务规则，并共用 `Crypto`、`BiliIntl`、`NetflixIP`、`TelegramIP` 等远程列表。Oracle 的自有 IP 与域名由 `Rules/oracle.list` 管理，Loon 也直接订阅这份规则。Loon 不直接读取 Stash 的 GeoSite 数据，因此使用 Loon 格式的远程列表近似对应；来源和命中范围可能不同，不能保证逐域名完全一致。Loon 的中国大陆直连订阅使用可莉的 `REGION_SPLITTER.lsr`，并将可莉的国内域名合集 `ChinaMaxNoIP.lsr` 放在远程规则倒数第二项、`Global` 之前；仍未命中的流量由本地 `FINAL,Proxy` 兜底。其命中范围与 Stash 的 `GEOSITE,cn`、`GEOIP,CN` 可能不同。B 站国际版的 MetaCubeX 列表已转为 Loon 本地规则，避免 Loon 的普通 B 站列表将国际版域名直连。
 
 ## DNS
 

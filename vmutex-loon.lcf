@@ -1,19 +1,19 @@
 # Loon 版本：业务组、DNS 出口与规则优先级尽量对应 VMUTEX.stoverride。
 # 不包含私人订阅、节点凭据或 MitM 证书；节点请在 Loon 本地单独导入。
 # Loon 不读取 Stash 的 GEOSITE 数据，Remote Rule 采用 Loon 可读的近似分类。
+# 本地规则的优先级高于远程规则，因此中国大陆直连订阅放在业务远程列表之后。
 
 [General]
 ip-mode = dual
 ipv6-vif = auto
-ipv6 = true
 
 # 与 Stash 的 nameserver 一致：公网真实解析只使用阿里 DoH。
 # Loon 默认在加密 DNS 失败时回退普通 DNS；若要防止此回退，请在 App 的 DNS 服务器页关闭。
 doh-server = https://dns.alidns.com/dns-query
 # 仅作为本地域名与 DoH 启动解析的系统 DNS 入口；公网回退行为由 App 设置控制。
 dns-server = system
-# 与 Stash 的 fake-ip-filter 对齐：这些名称返回真实 IP。
-real-ip = *.lan,*.local,*.localdomain,*.home.arpa,captive.apple.com,*.msftconnecttest.com,*.msftncsi.com
+# 与 Stash 的 geosite:private 和网络检测域名对齐：这些名称返回真实 IP。
+real-ip = localhost,*.localhost,*.lan,*.local,*.localdomain,*.home.arpa,*.internal,*.test,*.invalid,*.example,captive.apple.com,*.msftconnecttest.com,*.msftncsi.com
 # 代理节点域名可在各订阅的 server-dns 中单独指定阿里 / DNSPod DoH。
 
 skip-proxy = 192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,localhost,*.local
@@ -23,9 +23,11 @@ wifi-access-http-port = 7222
 wifi-access-socks5-port = 7221
 allow-udp-proxy = true
 disable-stun = false
+# 节点不支持 UDP 时拒绝连接，避免代理业务意外直连。
+udp-fallback-mode = REJECT
 proxy-test-url = http://www.gstatic.com/generate_204
 internet-test-url = http://wifi.vivo.com.cn/generate_204
-test-timeout = 3
+test-timeout = 10
 interface-mode = auto
 sni-sniffing = true
 
@@ -36,6 +38,11 @@ localhost = server:system
 *.local = server:system
 *.localdomain = server:system
 *.home.arpa = server:system
+*.localhost = server:system
+*.internal = server:system
+*.test = server:system
+*.invalid = server:system
+*.example = server:system
 *.in-addr.arpa = server:system
 *.ip6.arpa = server:system
 
@@ -50,34 +57,48 @@ All = NameRegex, FilterKey = ".*"
 
 [Proxy Group]
 # Loon 的总出口命名为 Proxy，避免与内置的 PROXY 策略名冲突；其余业务组对应 Stash。
-Proxy = select,All,REJECT
+# 固定选项顺序对应 Stash：未导入节点时总出口默认拒绝，Crypto 默认直连。
+Proxy = select,REJECT,All
 Oracle = select,DIRECT,Proxy
-AI = select,All,REJECT,Proxy
+AI = select,REJECT,Proxy,All
 Crypto = select,DIRECT,Proxy,REJECT,All
 
 [Rule]
-# Oracle 自有 IP 与域名优先；不再通过 bypass-tun 强制直连。
-IP-CIDR,149.118.147.51/32,Oracle,no-resolve
-IP-CIDR6,2603:c030:304:9f01:0:49da:2c15:4454/128,Oracle,no-resolve
-IP-CIDR,149.118.135.225/32,Oracle,no-resolve
-IP-CIDR6,2603:c030:304:9f01:0:11b3:17c:f41d/128,Oracle,no-resolve
-DOMAIN-SUFFIX,oracle.com,Oracle
-DOMAIN-SUFFIX,oraclecloud.com,Oracle
-DOMAIN-SUFFIX,5202323.xyz,Oracle
-# 私有地址直接连接；国内 IP 只按已有目标 IP 判断。
+# Oracle 自有 IP 与域名由下方远程 oracle.list 管理。
+# MetaCubeX 的 BiliIntl 列表比 Loon 版更全；本地规则确保国际版先于 BiliBili 直连命中。
+DOMAIN-SUFFIX,bstarstatic.com,Proxy
+DOMAIN-SUFFIX,bilibili.tv,Proxy
+DOMAIN-SUFFIX,biliintl.com,Proxy
+DOMAIN-SUFFIX,upos-bstar1-mirrorakam.akamaized.net,Proxy
+DOMAIN-SUFFIX,apm-misaka.biliapi.net,Proxy
+DOMAIN-SUFFIX,p-bstarstatic.akamaized.net,Proxy
+DOMAIN-SUFFIX,upos-bstar-mirrorakam.akamaized.net,Proxy
+DOMAIN-SUFFIX,upos-sz-mirrorcosbstar1.bilivideo.com,Proxy
+DOMAIN-SUFFIX,upos-sz-mirroralibstar1.bilivideo.com,Proxy
+DOMAIN-SUFFIX,app.global.bilibili.com,Proxy
+DOMAIN-SUFFIX,api.global.bilibili.com,Proxy
+# 私有地址直接连接；Loon 的本地规则优先于远程规则，此处不放国内 IP 兜底。
 IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
 IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
 IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
 IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
 DOMAIN-SUFFIX,home.arpa,DIRECT
+DOMAIN-SUFFIX,localhost,DIRECT
 DOMAIN-SUFFIX,local,DIRECT
 DOMAIN-SUFFIX,lan,DIRECT
-GEOIP,CN,DIRECT,no-resolve
+DOMAIN-SUFFIX,localdomain,DIRECT
+DOMAIN-SUFFIX,internal,DIRECT
+DOMAIN-SUFFIX,test,DIRECT
+DOMAIN-SUFFIX,invalid,DIRECT
+DOMAIN-SUFFIX,example,DIRECT
 FINAL,Proxy
 
 [Remote Rule]
 # Loon 的远程列表不等同于 Stash 的 GEOSITE；按 Stash 的主要业务顺序排布。
+# 与 Stash 共用 Oracle 规则；Loon 从远程列表为命中项绑定 Oracle 策略。
 # Crypto 使用与 Stash 相同的 MetaCubeX classical 列表。
+# Netflix、Telegram 的 Loon 列表同时包含域名和 IP 规则。
+https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/Rules/oracle.list, policy=Oracle, tag=Oracle, enabled=true
 https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list, policy=Crypto, tag=Crypto, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/OpenAI/OpenAI.list, policy=AI, tag=OpenAI, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Claude/Claude.list, policy=AI, tag=Claude, enabled=true
@@ -93,7 +114,6 @@ https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Twitch/Twitch.list, policy=Proxy, tag=Twitch, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/PrimeVideo/PrimeVideo.list, policy=Proxy, tag=AmazonPrimeVideo, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Bahamut/Bahamut.list, policy=Proxy, tag=Bahamut, enabled=true
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/BiliBiliIntl/BiliBiliIntl.list, policy=Proxy, tag=BiliBiliIntl, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/DAZN/DAZN.list, policy=Proxy, tag=DAZN, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Hulu/Hulu.list, policy=Proxy, tag=Hulu, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Abema/Abema.list, policy=Proxy, tag=AbemaTV, enabled=true
@@ -113,5 +133,8 @@ https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Microsoft/Microsoft.list, policy=DIRECT, tag=Microsoft, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/BiliBili/BiliBili.list, policy=DIRECT, tag=BiliBili, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/GoogleFCM/GoogleFCM.list, policy=Proxy, tag=GoogleFCM, enabled=true
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/China/China.list, policy=DIRECT, tag=China, enabled=true
+# 可莉的中国大陆分流规则；排在业务列表后，保留 TikTok 等境外服务的优先级。
+https://kelee.one/Tool/Loon/Lsr/REGION_SPLITTER.lsr, policy=DIRECT, tag=CN REGION, enabled=true
+# 国内域名合集作为远程规则倒数第二项；Global 在其后，剩余流量由本地 FINAL 兜底。
+https://rule.kelee.one/Loon/ChinaMaxNoIP.lsr, policy=DIRECT, tag=ChinaMaxNoIP, enabled=true
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Global/Global.list, policy=Proxy, tag=Global, enabled=true

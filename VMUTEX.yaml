@@ -7,8 +7,6 @@ proxy-groups:
   - name: PROXY
     type: select
     include-all: true
-    proxies:
-      - REJECT
   - name: Oracle
     type: select
     proxies:
@@ -17,7 +15,6 @@ proxy-groups:
   - name: AI
     type: select
     proxies:
-      - REJECT
       - PROXY
     include-all: true
   - name: Crypto
@@ -25,7 +22,6 @@ proxy-groups:
     proxies:
       - DIRECT
       - PROXY
-      - REJECT
     include-all: true
 rules:
   # Oracle 分类优先于下方分类；在远程列表中维护 IP 和域名，出口由分组选择。

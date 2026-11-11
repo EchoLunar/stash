@@ -47,14 +47,12 @@ proxy-groups: #!replace
   - name: Crypto # 加密货币服务合集的手选组，与 Mihomo 同名。
     type: select # 手动选择出口。
     icon: https://raw.githubusercontent.com/Hawaiine/Oasisic-Icons/main/icons/Crypto/Cryptocurrency/Cryptocurrency.png # 加密货币图标表示交易所、钱包等整个分类。
-    include-all: true # 允许直接挑选订阅节点或代理集。
     proxies: # 额外列出的固定选项。
       - DIRECT # 与 Mihomo 一样允许加密货币业务直连；首次加载时位于首项。
       - PROXY # 跟随总代理组。
 
   - name: Apple # Apple 服务的手选组，默认直连。
     type: select
-    include-all: true
     proxies:
       - DIRECT
       - PROXY

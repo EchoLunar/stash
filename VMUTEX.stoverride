@@ -28,15 +28,12 @@ dns: #!replace
       - system # 私有名称交给当前网络的系统 DNS，不送到公共 DoH。
 
 # #!replace 整块替换基础配置中的策略组；不替换节点本身。
-# Stash 空策略组会按 DIRECT 处理；显式保留 REJECT，确保组始终非空。
-# REJECT 也可手动选择；include-all 继续纳入基础配置中的全部节点和代理集。
+# include-all 纳入基础配置中的全部节点和代理集；请先加载有效节点订阅。
 proxy-groups: #!replace
   - name: PROXY # 境外流量的总代理组，也是其他业务组可选择的上游。
     type: select # 由用户手动选择组内出口。
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Global.png # 地球图标表示全部境外流量的总出口。
     include-all: true # 纳入基础配置中的节点和其他可用代理集。
-    proxies: # 额外列出的固定选项。
-      - REJECT # 保证组非空；选中时拒绝流量。
   - name: Oracle # 自有 VPS 与 Oracle 域名的手选组。
     type: select # 手动选择直连或跟随 PROXY。
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Server.png # 服务器图标表示自有 VPS 与 Oracle 资源。
@@ -47,9 +44,6 @@ proxy-groups: #!replace
     type: select # 手动选择出口。
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Bot.png # 机器人图标表示多种 AI 服务，而非单一品牌。
     include-all: true # 允许直接挑选订阅节点或代理集。
-    proxies: # 额外列出的固定选项。
-      - REJECT # 显式拒绝，避免空组选成直连。
-      - PROXY # 跟随总代理组。
   - name: Crypto # 加密货币服务合集的手选组，与 Mihomo 同名。
     type: select # 手动选择出口。
     icon: https://raw.githubusercontent.com/Hawaiine/Oasisic-Icons/main/icons/Crypto/Cryptocurrency/Cryptocurrency.png # 加密货币图标表示交易所、钱包等整个分类。
@@ -57,56 +51,30 @@ proxy-groups: #!replace
     proxies: # 额外列出的固定选项。
       - DIRECT # 与 Mihomo 一样允许加密货币业务直连；首次加载时位于首项。
       - PROXY # 跟随总代理组。
-      - REJECT # 显式拒绝，避免空组选成直连。
+
+  - name: Apple # Apple 服务的手选组，默认直连。
+    type: select
+    include-all: true
+    proxies:
+      - DIRECT
+      - PROXY
 
 # 从上到下匹配，第一条命中的规则决定连接出口；#!replace 整块替换基础规则。
 # 已移除 DNS 上游专用规则；以下业务规则与 VMUTEX.yaml 对齐。
 # Mihomo 的 private 标签转为 Stash 的 LAN。
 rules: #!replace
-  - RULE-SET,oracle,Oracle # 自有 VPS IP 和 Oracle / 自有域名走 Oracle 组。
-  - RULE-SET,Crypto,Crypto # 与 Mihomo 共用加密货币合集，涵盖交易所、钱包等域名。
-  - GEOIP,LAN,DIRECT,no-resolve # 已知局域网目标 IP 直连，不为此规则解析域名。
-  - GEOSITE,private,DIRECT # V2Fly private 域名集直连；仅匹配名称，不匹配私有 IP。
-  - GEOSITE,category-ai-!cn,AI # 境外 AI 域名走 AI 组。
-  - GEOSITE,youtube,PROXY # YouTube 域名直接跟随总代理组。
-  - GEOSITE,netflix,PROXY # Netflix 域名走总代理组。
-  - RULE-SET,NetflixIP,PROXY,no-resolve # Netflix IP 列表走总代理组，不触发域名解析。
-  - GEOSITE,telegram,PROXY # Telegram 域名直接跟随总代理组。
-  - RULE-SET,TelegramIP,PROXY,no-resolve # Telegram IP 列表直接跟随总代理组，不触发域名解析。
-  - GEOSITE,disney,PROXY # Disney 域名走总代理组。
-  - GEOSITE,hbo,PROXY # HBO 域名走总代理组。
-  - GEOSITE,spotify,PROXY # Spotify 域名走总代理组。
-  - GEOSITE,tiktok,PROXY # TikTok 域名走总代理组。
-  - GEOSITE,twitch,PROXY # Twitch 域名走总代理组。
-  - GEOSITE,primevideo,PROXY # Prime Video 域名走总代理组。
-  - GEOSITE,bahamut,PROXY # 巴哈姆特域名走总代理组。
-  - RULE-SET,BiliIntl,PROXY # 使用 MetaCubeX 国际站列表，优先于后面的 Bilibili 直连规则。
-  - GEOSITE,dazn,PROXY # DAZN 域名走总代理组。
-  - GEOSITE,hulu,PROXY # Hulu 域名走总代理组。
-  - GEOSITE,abema,PROXY # Abema 域名走总代理组。
-  - GEOSITE,bbc,PROXY # BBC 域名走总代理组。
-  - GEOSITE,dmm,PROXY # DMM 域名走总代理组。
-  - GEOSITE,niconico,PROXY # Niconico 域名走总代理组。
-  - GEOSITE,viu,PROXY # Viu 域名走总代理组。
-  - GEOSITE,soundcloud,PROXY # SoundCloud 域名走总代理组。
-  - GEOSITE,discoveryplus,PROXY # Discovery+ 域名走总代理组。
-  - GEOSITE,epicgames,PROXY # Epic Games 域名走总代理组。
-  - GEOSITE,origin,PROXY # Origin / EA 相关域名走总代理组。
-  - GEOSITE,sony,PROXY # Sony 域名走总代理组。
-  - GEOSITE,nintendo,PROXY # Nintendo 域名走总代理组。
-  - GEOSITE,steam,PROXY # Steam 域名走总代理组。
-  - GEOSITE,github,PROXY # GitHub 域名走总代理组。
-  - GEOSITE,apple,DIRECT # 未被上面规则先命中的 Apple 域名直连。
-  - GEOSITE,microsoft,DIRECT # 未被上面规则先命中的 Microsoft 域名直连。
-  - GEOSITE,bilibili,DIRECT # 未被国际站规则先命中的 Bilibili 域名直连。
-  - GEOSITE,googlefcm,PROXY # Google FCM 推送域名走总代理组。
-  - GEOSITE,geolocation-!cn,PROXY # 其他非中国大陆地理分类域名走总代理组。
-  - GEOSITE,cn,DIRECT # 中国大陆域名集直连。
-  - GEOIP,CN,DIRECT,no-resolve # 只按已有目标 IP 判断中国大陆直连；域名不为此规则提前解析。
-  - MATCH,PROXY # 以上规则均未命中时走总代理组。
+  # 专属分组优先，其余流量按国内域名和已有目标 IP 判断，未命中时走 PROXY。
+  - RULE-SET,oracle,Oracle
+  - RULE-SET,Crypto,Crypto
+  - GEOIP,LAN,DIRECT,no-resolve
+  - GEOSITE,private,DIRECT
+  - GEOSITE,category-ai-!cn,AI
+  - GEOSITE,apple,Apple
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT,no-resolve
+  - MATCH,PROXY
 
-# #!replace 整块替换基础配置的规则提供器；每个名称由上方 RULE-SET 引用。
-# classical 可混合域名与 IP 规则；domain 只承载域名匹配。
+# #!replace 整块替换基础配置的规则提供器；只保留专属分组使用的列表。
 rule-providers: #!replace
   oracle: # 自有 VPS 与 Oracle 域名的远程列表。
     behavior: classical # 列表中同时包含域名规则和 IP 规则。
@@ -119,22 +87,4 @@ rule-providers: #!replace
     format: text # 上游文件按逐行文本规则读取。
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list # 与 Mihomo 相同的规则下载地址。
     path: ./ruleset/Crypto.list # Stash 本地缓存路径。
-    interval: 86400 # 每 24 小时检查一次更新。
-  BiliIntl: # MetaCubeX 国际站完整域名列表，与 Mihomo 的 geosite 来源一致。
-    behavior: domain # 列表只包含域名模式。
-    format: text # 上游文件按逐行文本域名读取。
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.list # 国际站规则下载地址。
-    path: ./ruleset/BiliIntl.list # Stash 本地缓存路径。
-    interval: 86400 # 每 24 小时检查一次更新。
-  NetflixIP: # Netflix 的远程 IP 规则列表。
-    behavior: classical # 按完整 IP 规则语法匹配。
-    format: text # 上游文件按逐行文本规则读取。
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/netflix.list # 规则下载地址。
-    path: ./ruleset/NetflixIP.list # Stash 本地缓存路径。
-    interval: 86400 # 每 24 小时检查一次更新。
-  TelegramIP: # Telegram 的远程 IP 规则列表。
-    behavior: classical # 按完整 IP 规则语法匹配。
-    format: text # 上游文件按逐行文本规则读取。
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/telegram.list # 规则下载地址。
-    path: ./ruleset/TelegramIP.list # Stash 本地缓存路径。
     interval: 86400 # 每 24 小时检查一次更新。

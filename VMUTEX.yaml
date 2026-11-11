@@ -3,7 +3,7 @@ mode: rule
 
 proxy-groups:
   # Oracle 仅提供 DIRECT / PROXY；其余业务组可跟随 PROXY 或单独选择节点。
-  # Crypto 额外提供 DIRECT；REJECT 保证未加载订阅节点时代理组仍有明确的拒绝出口。
+  # Crypto 与 Apple 可选直连、PROXY 或具体节点。
   - name: PROXY
     type: select
     include-all: true
@@ -23,50 +23,24 @@ proxy-groups:
       - DIRECT
       - PROXY
     include-all: true
+  - name: Apple
+    type: select
+    proxies:
+      - DIRECT
+      - PROXY
+    include-all: true
 rules:
-  # Oracle 分类优先于下方分类；在远程列表中维护 IP 和域名，出口由分组选择。
+  # 专属分组优先，其余流量按国内域名和已有目标 IP 判断，未命中时走 PROXY。
   - RULE-SET,oracle,Oracle
-  # 加密货币合集包含交易所、钱包及行情服务，优先于通用地区与兜底规则。
   - RULE-SET,Crypto,Crypto
   - GEOIP,private,DIRECT,no-resolve
   - GEOSITE,private,DIRECT
   - GEOSITE,category-ai-!cn,AI
-  - GEOSITE,youtube,PROXY
-  - GEOSITE,netflix,PROXY
-  - RULE-SET,NetflixIP,PROXY,no-resolve
-  - GEOSITE,telegram,PROXY
-  - RULE-SET,TelegramIP,PROXY,no-resolve
-  - GEOSITE,disney,PROXY
-  - GEOSITE,hbo,PROXY
-  - GEOSITE,spotify,PROXY
-  - GEOSITE,tiktok,PROXY
-  - GEOSITE,twitch,PROXY
-  - GEOSITE,primevideo,PROXY
-  - GEOSITE,bahamut,PROXY
-  - RULE-SET,BiliIntl,PROXY
-  - GEOSITE,dazn,PROXY
-  - GEOSITE,hulu,PROXY
-  - GEOSITE,abema,PROXY
-  - GEOSITE,bbc,PROXY
-  - GEOSITE,dmm,PROXY
-  - GEOSITE,niconico,PROXY
-  - GEOSITE,viu,PROXY
-  - GEOSITE,soundcloud,PROXY
-  - GEOSITE,discoveryplus,PROXY
-  - GEOSITE,epicgames,PROXY
-  - GEOSITE,origin,PROXY
-  - GEOSITE,sony,PROXY
-  - GEOSITE,nintendo,PROXY
-  - GEOSITE,steam,PROXY
-  - GEOSITE,github,PROXY
-  - GEOSITE,apple,DIRECT
-  - GEOSITE,microsoft,DIRECT
-  - GEOSITE,bilibili,DIRECT
-  - GEOSITE,googlefcm,PROXY
-  - GEOSITE,geolocation-!cn,PROXY
+  - GEOSITE,apple,Apple
   - GEOSITE,cn,DIRECT
   - GEOIP,CN,DIRECT,no-resolve
   - MATCH,PROXY
+
 rule-providers:
   oracle:
     type: http
@@ -83,27 +57,6 @@ rule-providers:
     format: text
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list
     path: ./ruleset/Crypto.list
-    interval: 86400
-  BiliIntl:
-    type: http
-    behavior: domain
-    format: text
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/biliintl.list
-    path: ./ruleset/BiliIntl.list
-    interval: 86400
-  NetflixIP:
-    type: http
-    behavior: classical
-    format: text
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/netflix.list
-    path: ./ruleset/NetflixIP.list
-    interval: 86400
-  TelegramIP:
-    type: http
-    behavior: classical
-    format: text
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/classical/telegram.list
-    path: ./ruleset/TelegramIP.list
     interval: 86400
 dns:
   # 与 Stash 覆写一致：连接规则按域名匹配，普通域名先返回 Fake IP。

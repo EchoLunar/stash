@@ -1,10 +1,10 @@
 # VMUTEX 分流配置
 
-`VMUTEX.stoverride` 是 Stash 的规则、策略组与 DNS 覆写；`VMUTEX.yaml` 是 Mihomo 版本。公开文件不包含私人节点订阅地址。`VMUTEX-Local.yaml` 仅存本地，已在 `.gitignore` 中排除；请勿用强制添加方式上传。
+`VMUTEX-Stash.yaml` 是 Stash 的完整远程主配置，包含规则、分组、DNS 和规则集；`VMUTEX.stoverride` 仅声明两个订阅参数并注入订阅地址；`VMUTEX.yaml` 是 Mihomo 版本。公开文件不包含私人节点订阅地址，两个订阅在 Stash 的覆写参数中填写。历史私人配置文件仍由 `.gitignore` 排除。
 
 ## 分流策略
 
-Stash 与 Mihomo 的分组均为 `PROXY`、`Oracle`、`AI`、`Crypto` 和 `Apple`。`Oracle` 可选直连或跟随 `PROXY`；Stash 的 `Crypto` 与 `Apple` 和 `Oracle` 一样，仅可选 `DIRECT` 或 `PROXY`，默认直连；Mihomo 的 `Crypto` 与 `Apple` 还可选具体节点。请导入自己的节点后检查各组选择。Stash 的 `PROXY` 与 `AI` 仅收集全部节点和代理集，不提供 `REJECT` 选项；AI 直接选择具体节点或代理集。
+Stash 与 Mihomo 的分组均为 `PROXY`、`Oracle`、`AI`、`Crypto` 和 `Apple`。Stash 的 `PROXY` 与 `AI` 通过 `use` 展开两个订阅中的节点；`Apple` 与 `Crypto` 在同一个分组显示 `DIRECT` 和两个订阅的节点，默认直连；`Oracle` 保持仅可选 `DIRECT` 或 `PROXY`。所有分组均不提供 `REJECT`。Mihomo 保持现有分组选项。启用后请在 `PROXY` 和 `AI` 中选择可用节点。
 
 规则先匹配 Oracle、Crypto、局域网和私有名称，再匹配 AI 与 Apple 专属分组。其余流量按国内域名和已有目标 IP 判断国内直连，最后由 `MATCH,PROXY` 兜底。Stash 使用 MetaCubeX 的 `ChinaDomain` / `ChinaIP` 规则集；Mihomo 使用 `GEOSITE,cn,DIRECT` 和 `GEOIP,CN,DIRECT,no-resolve`。已移除各服务单独指向 `PROXY` 的规则、微软与 B 站单独直连规则，以及比亚迪临时规则。服务的国内资源可能因此直连；未被国内域名集收录且没有真实目标 IP 的连接仍会走代理。
 
@@ -18,7 +18,25 @@ Stash 关闭 `follow-rule`；Mihomo 关闭 `respect-rules`。两者使用 Fake I
 
 ## 使用与更新
 
-- Stash：先加载自己的节点订阅，再启用 `VMUTEX.stoverride`。覆写会整体替换 DNS、策略组、规则与规则提供器；节点由基础配置提供。[Stash 覆写文档](https://stash.wiki/configuration/override)
+Stash 参数化版本需要支持覆写参数的 **Beta iOS/tvOS 3.7+ 或 macOS 4.4+**。安装方式：
+
+1. 在 Stash 中通过 URL 添加 [VMUTEX-Stash.yaml](https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/VMUTEX-Stash.yaml)，作为远程主配置，保留其远程来源以便后续更新。
+2. 通过 URL 安装 [VMUTEX.stoverride](https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/VMUTEX.stoverride)，作为该主配置使用的订阅参数覆写。
+3. 在覆写详情的「参数」中填写「第一个订阅地址」和「第二个订阅地址」，两个参数均为必填。订阅需要返回包含 `proxies` 的 Stash / Clash YAML。
+4. 完成参数填写并启用覆写后再启动连接，等待两个代理集及规则集下载，在 `PROXY` 和 `AI` 中选择节点。Apple 和 Crypto 可直接选择 `DIRECT` 或订阅节点。主配置不含可用的订阅 URL，需与已填写参数的覆写配合使用。
+
+更新与更换订阅：
+
+- 规则、分组、DNS 有变化时，只需更新远程主配置 `VMUTEX-Stash.yaml`，无需编辑或重新填写订阅地址。
+- 订阅地址始终从启用的参数化覆写注入，主配置更新不会覆盖这些本地参数。
+- 覆写本身也可远程更新：更新同一个已安装覆写时，Stash 保留适用的参数值；不要删除后重新安装。后续维护保持 `subscription_a` / `subscription_b` 参数名不变。
+- 参数值保存在本设备；官方说明分享或导出覆写只包含原始文件，不包含填写的参数值。换设备时需重新填写。
+- 更换订阅只需修改覆写参数并保存应用，不需要改 GitHub 源文件。
+- 两个代理集各自每 24 小时检查更新；合并是让分组引用两个代理集，不会生成第三份订阅，也不保证对重名节点去重。
+- 参数覆写只递归合并 `SubscriptionA` / `SubscriptionB` 的 `url`，保留主配置的缓存路径和更新周期，不改分组、规则或 DNS。旧版 VMUTEX 规则覆写及其他订阅覆写应停用，避免它们重新覆盖主配置或订阅地址。
+
+[Stash 参数与远程更新说明](https://stash.wiki/configuration/override#覆写参数)、[代理集说明](https://stash.wiki/proxy-protocols/proxy-providers)
+
 - Mihomo：加载 `VMUTEX.yaml` 并自行加入节点或代理提供器；远程规则集每 24 小时检查更新。
 
 更新后重新加载配置、清理 DNS 缓存并关闭旧连接，再确认 Oracle、Crypto、AI、Apple、国内域名和最终兜底规则的实际命中情况。

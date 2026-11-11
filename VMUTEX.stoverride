@@ -5,84 +5,196 @@ icon: https://fastly.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AmyTelecom.png
 
 # 作为现有节点订阅的覆写使用。启用前先为代理业务组选择节点；Oracle 默认直连。
 # 规则 / DNS / 分组整体替换，节点和节点订阅由基础配置提供。
-mode: rule # 按下方 rules 顺序匹配连接。
-log-level: info # 记录常规运行信息，便于查看分流结果。
+# 按下方 rules 顺序匹配连接。
+mode: rule
+# 记录常规运行信息，便于查看分流结果。
+log-level: info
 
 # #!replace 是 Stash 覆写指令：整块替换基础配置中的 DNS，避免混入旧上游。
 dns: #!replace
-  follow-rule: false # 内置 DNS 直连；避免 DNS 经代理导致直连网站的 CDN 选址偏移。
-  fake-ip-filter: # 仅对本地名称和系统网络检测域名返回真实 IP。
-    - 'geosite:private' # 私有名称及部分本地登录域名使用真实 IP；详见 README。
-    - 'captive.apple.com' # Apple 网络连通性及门户检测使用真实 IP。
-    - '+.msftconnecttest.com' # Windows 网络连通性检测主域及子域使用真实 IP。
-    - '+.msftncsi.com' # Windows NCSI 网络状态检测主域及子域使用真实 IP。
-  default-nameserver: # 解析下面 DoH 服务器域名时的启动 DNS。
-    - system # 使用当前系统网络提供的 DNS，避免 DoH 域名依赖自身解析。
-  proxy-server-nameserver: # 独立解析代理节点的服务器域名，不走代理规则。
-    - https://dns.alidns.com/dns-query # 阿里 DoH；节点域名解析候选上游之一。
-    - https://doh.pub/dns-query # DNSPod DoH；与上一条并发，取先成功的结果。
-  nameserver: # 需要真实 IP 的公网域名使用一处稳定的国内 DoH。
-    - https://dns.alidns.com/dns-query # 阿里 DoH 直连；单上游避免并发解析结果在服务商之间切换。
-  nameserver-policy: # 仅将私有域名交给当前网络的系统 DNS。
-    'geosite:private': # V2Fly private 域名集，如 .local、.lan、home.arpa。
-      - system # 私有名称交给当前网络的系统 DNS，不送到公共 DoH。
+
+  # 内置 DNS 直连；避免 DNS 经代理导致直连网站的 CDN 选址偏移。
+  follow-rule: false
+
+  # 仅对本地名称和系统网络检测域名返回真实 IP。
+  fake-ip-filter:
+    # 私有名称及部分本地登录域名使用真实 IP；详见 README。
+    - 'rule-set:PrivateDomain'
+    # Apple 网络连通性及门户检测使用真实 IP。
+    - 'captive.apple.com'
+    # Windows 网络连通性检测主域及子域使用真实 IP。
+    - '+.msftconnecttest.com'
+    # Windows NCSI 网络状态检测主域及子域使用真实 IP。
+    - '+.msftncsi.com'
+
+  # 解析下面 DoH 服务器域名时的启动 DNS。
+  default-nameserver:
+    # 使用当前系统网络提供的 DNS，避免 DoH 域名依赖自身解析。
+    - system
+
+  # 独立解析代理节点的服务器域名，不走代理规则。
+  proxy-server-nameserver:
+    # 阿里 DoH；节点域名解析候选上游之一。
+    - https://dns.alidns.com/dns-query
+    # DNSPod DoH；与上一条并发，取先成功的结果。
+    - https://doh.pub/dns-query
+
+  # 需要真实 IP 的公网域名使用一处稳定的国内 DoH。
+  nameserver:
+    # 阿里 DoH 直连；单上游避免并发解析结果在服务商之间切换。
+    - https://dns.alidns.com/dns-query
+
+  # 仅将私有域名交给当前网络的系统 DNS。
+  nameserver-policy:
+    # MetaCubeX 私有域名集，如 .local、.lan、home.arpa。
+    'rule-set:PrivateDomain':
+      # 私有名称交给当前网络的系统 DNS，不送到公共 DoH。
+      - system
 
 # #!replace 整块替换基础配置中的策略组；不替换节点本身。
 # include-all 纳入基础配置中的全部节点和代理集；请先加载有效节点订阅。
 proxy-groups: #!replace
-  - name: PROXY # 境外流量的总代理组，也是其他业务组可选择的上游。
-    type: select # 由用户手动选择组内出口。
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Global.png # 地球图标表示全部境外流量的总出口。
-    include-all: true # 纳入基础配置中的节点和其他可用代理集。
-  - name: Oracle # 自有 VPS 与 Oracle 域名的手选组。
-    type: select # 手动选择直连或跟随 PROXY。
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Server.png # 服务器图标表示自有 VPS 与 Oracle 资源。
-    proxies: # Oracle 只提供以下两个出口。
-      - DIRECT # 从当前设备直接连接。
-      - PROXY # 使用 PROXY 当前选定的节点。
-  - name: AI # 境外 AI 服务的手选组。
-    type: select # 手动选择出口。
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Bot.png # 机器人图标表示多种 AI 服务，而非单一品牌。
-    include-all: true # 允许直接挑选订阅节点或代理集。
-  - name: Crypto # 加密货币服务合集的手选组，与 Mihomo 同名。
-    type: select # 手动选择出口。
-    icon: https://raw.githubusercontent.com/Hawaiine/Oasisic-Icons/main/icons/Crypto/Cryptocurrency/Cryptocurrency.png # 加密货币图标表示交易所、钱包等整个分类。
-    proxies: # 额外列出的固定选项。
-      - DIRECT # 与 Mihomo 一样允许加密货币业务直连；首次加载时位于首项。
-      - PROXY # 跟随总代理组。
 
-  - name: Apple # Apple 服务的手选组，默认直连。
+  # 境外流量的总代理组，也是其他业务组可选择的上游。
+  - name: PROXY
+    # 由用户手动选择组内出口。
     type: select
+    # 地球图标表示全部境外流量的总出口。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Global.png
+    # 纳入基础配置中的节点和其他可用代理集。
+    include-all: true
+
+  # 自有 VPS 与 Oracle 域名的手选组。
+  - name: Oracle
+    # 手动选择直连或跟随 PROXY。
+    type: select
+    # 服务器图标表示自有 VPS 与 Oracle 资源。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Server.png
+    # Oracle 只提供以下两个出口。
+    proxies:
+      # 从当前设备直接连接。
+      - DIRECT
+      # 使用 PROXY 当前选定的节点。
+      - PROXY
+
+  # 境外 AI 服务的手选组。
+  - name: AI
+    # 手动选择出口。
+    type: select
+    # 机器人图标表示多种 AI 服务，而非单一品牌。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Bot.png
+    # 允许直接挑选订阅节点或代理集。
+    include-all: true
+
+  # 加密货币服务合集的手选组，与 Mihomo 同名。
+  - name: Crypto
+    # 手动选择出口。
+    type: select
+    # 加密货币图标表示交易所、钱包等整个分类。
+    icon: https://raw.githubusercontent.com/Hawaiine/Oasisic-Icons/main/icons/Crypto/Cryptocurrency/Cryptocurrency.png
+    # 额外列出的固定选项。
+    proxies:
+      # 与 Mihomo 一样允许加密货币业务直连；首次加载时位于首项。
+      - DIRECT
+      # 跟随总代理组。
+      - PROXY
+
+  # Apple 服务的手选组，默认直连。
+  - name: Apple
+    type: select
+    # Apple 品牌图标。
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png
     proxies:
       - DIRECT
       - PROXY
 
 # 从上到下匹配，第一条命中的规则决定连接出口；#!replace 整块替换基础规则。
-# 已移除 DNS 上游专用规则；以下业务规则与 VMUTEX.yaml 对齐。
-# Mihomo 的 private 标签转为 Stash 的 LAN。
+# 与 Mihomo 保持相同业务顺序；Stash 通过规则集明确使用 MetaCubeX 数据。
+# DNS 中的私有名称匹配也共用 PrivateDomain，不依赖客户端 GeoSite 数据。
 rules: #!replace
   # 专属分组优先，其余流量按国内域名和已有目标 IP 判断，未命中时走 PROXY。
   - RULE-SET,oracle,Oracle
   - RULE-SET,Crypto,Crypto
-  - GEOIP,LAN,DIRECT,no-resolve
-  - GEOSITE,private,DIRECT
-  - GEOSITE,category-ai-!cn,AI
-  - GEOSITE,apple,Apple
-  - GEOSITE,cn,DIRECT
-  - GEOIP,CN,DIRECT,no-resolve
+  - RULE-SET,PrivateIP,DIRECT,no-resolve
+  - RULE-SET,PrivateDomain,DIRECT
+  - RULE-SET,AI,AI
+  - RULE-SET,Apple,Apple
+  - RULE-SET,ChinaDomain,DIRECT
+  - RULE-SET,ChinaIP,DIRECT,no-resolve
   - MATCH,PROXY
 
-# #!replace 整块替换基础配置的规则提供器；只保留专属分组使用的列表。
+# #!replace 整块替换基础配置的规则提供器；远程列表每 24 小时检查更新。
 rule-providers: #!replace
-  oracle: # 自有 VPS 与 Oracle 域名的远程列表。
-    behavior: classical # 列表中同时包含域名规则和 IP 规则。
-    format: text # 上游文件按逐行文本规则读取。
-    url: https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/Rules/oracle.list # 规则下载地址。
-    path: ./ruleset/oracle.list # Stash 保存下载结果的本地路径。
-    interval: 86400 # 每 86400 秒检查一次更新，即 24 小时。
-  Crypto: # 与 Mihomo 共用 MetaCubeX 加密货币合集。
-    behavior: classical # 按完整规则语法匹配。
-    format: text # 上游文件按逐行文本规则读取。
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list # 与 Mihomo 相同的规则下载地址。
-    path: ./ruleset/Crypto.list # Stash 本地缓存路径。
-    interval: 86400 # 每 24 小时检查一次更新。
+  # 自有 VPS 与 Oracle 域名的远程列表。
+  oracle:
+    # 列表中同时包含域名规则和 IP 规则。
+    behavior: classical
+    # 上游文件按逐行文本规则读取。
+    format: text
+    # 规则下载地址。
+    url: https://raw.githubusercontent.com/EchoLunar/stash/refs/heads/main/Rules/oracle.list
+    # Stash 保存下载结果的本地路径。
+    path: ./ruleset/oracle.list
+    # 每 86400 秒检查一次更新，即 24 小时。
+    interval: 86400
+
+  # 与 Mihomo 共用 MetaCubeX 加密货币合集。
+  Crypto:
+    # 按完整规则语法匹配。
+    behavior: classical
+    # 上游文件按逐行文本规则读取。
+    format: text
+    # 与 Mihomo 相同的规则下载地址。
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-cryptocurrency.list
+    # Stash 本地缓存路径。
+    path: ./ruleset/Crypto.list
+    # 每 24 小时检查一次更新。
+    interval: 86400
+
+  # 私有、保留及局域网 IP 地址段。
+  PrivateIP:
+    behavior: ipcidr
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.list
+    path: ./ruleset/PrivateIP.list
+    interval: 86400
+
+  # 私有域名；分流、Fake IP 过滤及系统 DNS 策略共用。
+  PrivateDomain:
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.list
+    path: ./ruleset/PrivateDomain.list
+    interval: 86400
+
+  # 境外 AI 分类，使用完整规则形式保留上游匹配类型。
+  AI:
+    behavior: classical
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/classical/category-ai-!cn.list
+    path: ./ruleset/AI.list
+    interval: 86400
+
+  # Apple 服务域名。
+  Apple:
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.list
+    path: ./ruleset/Apple.list
+    interval: 86400
+
+  # 国内域名集合，包含比亚迪等已收录域名。
+  ChinaDomain:
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.list
+    path: ./ruleset/ChinaDomain.list
+    interval: 86400
+
+  # 中国大陆 IPv4 与 IPv6 地址段。
+  ChinaIP:
+    behavior: ipcidr
+    format: text
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.list
+    path: ./ruleset/ChinaIP.list
+    interval: 86400
